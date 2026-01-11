@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApplyTrack</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: "#0D9488",
+              coral: "#FB7185",
+              gold: "#FBBF24",
+            },
+          },
+          boxShadow: {
+            soft: "0 12px 40px rgba(15, 23, 42, 0.10)",
+            soft2: "0 16px 60px rgba(15, 23, 42, 0.12)",
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; scroll-padding-top: 110px; }
+    section[id] { scroll-margin-top: 110px; }
+
+/* Grain overlay (WORKING) */
+.grain{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;          /* clip to rounded corners */
+}
+
+.grain::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  pointer-events:none;
+  z-index: 0;
+
+  /* Fully URL-encoded SVG noise (reliable across browsers) */
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20width%3D'240'%20height%3D'240'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.9'%20numOctaves%3D'3'%20stitchTiles%3D'stitch'/%3E%3C/filter%3E%3Crect%20width%3D'240'%20height%3D'240'%20filter%3D'url(%23n)'%20opacity%3D'.22'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 240px 240px;
+
+  opacity: .28;
+  mix-blend-mode: multiply;
+  filter: contrast(140%);
+}
+
+.grain > *{
+  position: relative;
+  z-index: 1;
+}
+
+
+    /* Navbar scroll state */
+    .nav-scrolled .nav-inner {
+      box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
+    }
+
+    /* -----------------------------
+       Custom Scrollbar
+       ----------------------------- */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(13, 148, 136, 0.55) rgba(15, 23, 42, 0.08);
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.06);
+      border-left: 1px solid rgba(15, 23, 42, 0.06);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(
+        180deg,
+        rgba(13, 148, 136, 0.70),
+        rgba(251, 113, 133, 0.60),
+        rgba(251, 191, 36, 0.60)
+      );
+      border-radius: 999px;
+      border: 3px solid rgba(255, 255, 255, 0.80);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(
+        180deg,
+        rgba(13, 148, 136, 0.92),
+        rgba(251, 113, 133, 0.80),
+        rgba(251, 191, 36, 0.80)
+      );
+    }
+    ::-webkit-scrollbar-corner { background: rgba(15, 23, 42, 0.06); }
+  </style>
+  <link rel="icon" href="./favicon.ico" sizes="any">
+<link rel="shortcut icon" href="./favicon.ico">
+
+</head>
+
+<body class="bg-white text-slate-900">
+  <!-- Background -->
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-32 -left-32 h-[28rem] w-[28rem] rounded-full bg-brand-teal/18 blur-3xl"></div>
+    <div class="absolute top-10 -right-40 h-[34rem] w-[34rem] rounded-full bg-brand-coral/14 blur-3xl"></div>
+    <div class="absolute bottom-[-12rem] left-1/3 h-[34rem] w-[34rem] rounded-full bg-brand-gold/14 blur-3xl"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white"></div>
+  </div>
+
+  <!-- Sticky Premium Navbar -->
+  <header id="siteHeader" class="sticky top-0 z-50">
+    <div class="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
+      <div class="nav-inner rounded-[1.75rem] bg-gradient-to-r from-brand-teal/35 via-brand-gold/25 to-brand-coral/35 p-[1px] transition-all">
+        <div class="rounded-[1.75rem] bg-white/80 backdrop-blur-xl ring-1 ring-black/5">
+          <nav class="flex items-center justify-between px-3 py-3 sm:px-4" aria-label="Primary">
+            <a href="#top" class="flex items-center gap-3 rounded-2xl px-2 py-2">
+              <span class="grid h-10 w-10 place-items-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
+                <i data-lucide="briefcase" class="h-5 w-5 text-brand-teal"></i>
+              </span>
+              <span class="leading-tight">
+                <span class="block text-sm font-semibold tracking-tight">ApplyTrack</span>
+                <span class="block text-xs text-slate-600">Job Application Tracker</span>
+              </span>
+            </a>
+
+            <div class="hidden items-center gap-1 md:flex">
+              <a data-nav href="#features" class="navlink rounded-xl px-3 py-2 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50">Features</a>
+              <a data-nav href="#pricing"  class="navlink rounded-xl px-3 py-2 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50">Pricing</a>
+              <a data-nav href="#faq"      class="navlink rounded-xl px-3 py-2 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50">FAQ</a>
+              <a data-nav href="#contact"  class="navlink rounded-xl px-3 py-2 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50">Contact</a>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a href="./login.html"
+                 class="hidden sm:inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                <i data-lucide="log-in" class="h-4 w-4"></i>
+                <span>Log in</span>
+              </a>
+
+              <a href="./signup.html"
+                 class="inline-flex items-center gap-2 rounded-xl bg-brand-teal px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
+                <i data-lucide="user-plus" class="h-4 w-4"></i>
+                <span>Create free account</span>
+              </a>
+
+              <button id="menuBtn"
+                      class="md:hidden rounded-xl bg-white p-2 shadow-soft ring-1 ring-black/5 hover:bg-slate-50"
+                      aria-label="Open menu"
+                      aria-expanded="false"
+                      aria-controls="mobileMenu">
+                <i data-lucide="menu" class="h-5 w-5"></i>
+              </button>
+            </div>
+          </nav>
+
+          <!-- Mobile menu -->
+          <div id="mobileMenu" class="hidden px-3 pb-3 sm:px-4 md:hidden">
+            <div class="rounded-2xl bg-white/90 backdrop-blur ring-1 ring-black/5 shadow-soft p-2">
+              <a data-nav href="#features" class="block rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900">Features</a>
+              <a data-nav href="#pricing"  class="block rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900">Pricing</a>
+              <a data-nav href="#faq"      class="block rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900">FAQ</a>
+              <a data-nav href="#contact"  class="block rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900">Contact</a>
+
+              <div class="mt-2 grid gap-2">
+                <a href="/login"
+                   class="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-black/5 hover:bg-slate-50">
+                  <i data-lucide="log-in" class="h-4 w-4"></i>
+                  <span>Log in</span>
+                </a>
+                <a href="/signup"
+                   class="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-teal px-4 py-2 text-sm font-semibold text-white hover:bg-brand-teal/90">
+                  <i data-lucide="user-plus" class="h-4 w-4"></i>
+                  <span>Create free account</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="top"></div>
+
+  <main class="mx-auto max-w-6xl px-4 sm:px-6">
+    <!-- Hero -->
+    <section class="pb-10 pt-10 sm:pb-14 sm:pt-14">
+      <div class="grid items-center gap-10 lg:grid-cols-2">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs shadow-soft ring-1 ring-black/5">
+            <i data-lucide="badge-check" class="h-4 w-4 text-brand-teal"></i>
+            <span class="text-slate-700">Free during beta — no credit card</span>
+          </div>
+
+          <h1 class="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+            Track every application in one place — no spreadsheets.
+          </h1>
+
+          <p class="mt-4 max-w-xl text-base leading-relaxed text-slate-700 sm:text-lg">
+            Add applications, statuses, interviews, notes, and deadlines. Stay organized and move faster.
+          </p>
+
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <a href="/signup"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-teal px-5 py-3 text-center text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
+              <i data-lucide="user-plus" class="h-4 w-4"></i>
+              <span>Create free account</span>
+            </a>
+
+            <a href="#features"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+              <i data-lucide="layout-grid" class="h-4 w-4 text-brand-coral"></i>
+              <span>See features</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero demo card -->
+        <div class="relative">
+          <div class="rounded-[2rem] bg-gradient-to-br from-brand-teal/25 via-brand-gold/18 to-brand-coral/22 p-[1px] shadow-soft2">
+            <div class="grain rounded-[2rem] bg-white/85 backdrop-blur ring-1 ring-black/5 p-6 sm:p-8">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="text-sm font-semibold">Example dashboard</div>
+                  <div class="mt-1 text-xs text-slate-600">Status, interview, deadline, notes — at a glance.</div>
+                </div>
+                <div class="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">
+                  <i data-lucide="briefcase" class="h-3.5 w-3.5 text-brand-gold"></i>
+                  <span>ApplyTrack</span>
+                </div>
+              </div>
+
+              <div class="mt-6 grid gap-3">
+                <div class="flex items-center justify-between rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+                  <div class="min-w-0">
+                    <div class="truncate text-sm font-semibold">Junior IT Support</div>
+                    <div class="mt-1 flex flex-wrap gap-2 text-xs text-slate-600">
+                      <span class="rounded-full bg-slate-50 px-2 py-1 ring-1 ring-black/5">Company: MedTech</span>
+                      <span class="rounded-full bg-slate-50 px-2 py-1 ring-1 ring-black/5">Deadline: Jan 18</span>
+                    </div>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-brand-gold/25 px-3 py-1 text-xs font-semibold text-slate-900 ring-1 ring-brand-gold/40">
+                    In review
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+                  <div class="min-w-0">
+                    <div class="truncate text-sm font-semibold">Frontend Intern</div>
+                    <div class="mt-1 flex flex-wrap gap-2 text-xs text-slate-600">
+                      <span class="rounded-full bg-slate-50 px-2 py-1 ring-1 ring-black/5">Company: StudioLabs</span>
+                      <span class="rounded-full bg-slate-50 px-2 py-1 ring-1 ring-black/5">Interview: Jan 14</span>
+                    </div>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-brand-teal/12 px-3 py-1 text-xs font-semibold text-brand-teal ring-1 ring-brand-teal/25">
+                    Interview
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-6 grid grid-cols-2 gap-3">
+                <div class="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+                  <div class="flex items-center gap-2 text-xs text-slate-600">
+                    <i data-lucide="calendar" class="h-4 w-4 text-brand-teal"></i>
+                    <span>This week</span>
+                  </div>
+                  <div class="mt-1 text-2xl font-semibold">3</div>
+                  <div class="mt-1 text-xs text-slate-600">interviews scheduled</div>
+                </div>
+                <div class="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+                  <div class="flex items-center gap-2 text-xs text-slate-600">
+                    <i data-lucide="layers" class="h-4 w-4 text-brand-coral"></i>
+                    <span>Pipeline</span>
+                  </div>
+                  <div class="mt-1 text-2xl font-semibold">12</div>
+                  <div class="mt-1 text-xs text-slate-600">active applications</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-10 sm:py-14">
+      <div class="max-w-2xl">
+        <h2 class="text-3xl font-semibold tracking-tight">Everything you need for your job search</h2>
+        <p class="mt-3 text-slate-700">Minimal features that actually help: tracking, reminders, and export.</p>
+      </div>
+
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-teal/10 ring-1 ring-brand-teal/15">
+              <i data-lucide="briefcase" class="h-5 w-5 text-brand-teal"></i>
+            </span>
+            <div class="text-sm font-semibold">Applications</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Company, role, link, location, salary, and notes.</p>
+        </div>
+
+        <div class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-gold/15 ring-1 ring-brand-gold/25">
+              <i data-lucide="git-branch" class="h-5 w-5 text-slate-900"></i>
+            </span>
+            <div class="text-sm font-semibold">Status timeline</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Applied → In review → Interview → Offer → Rejected.</p>
+        </div>
+
+        <div class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-coral/10 ring-1 ring-brand-coral/15">
+              <i data-lucide="calendar" class="h-5 w-5 text-brand-coral"></i>
+            </span>
+            <div class="text-sm font-semibold">Interviews</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Schedule dates, attach contacts, and prep notes.</p>
+        </div>
+
+        <div class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-teal/10 ring-1 ring-brand-teal/15">
+              <i data-lucide="calendar-clock" class="h-5 w-5 text-brand-teal"></i>
+            </span>
+            <div class="text-sm font-semibold">Deadlines</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Follow-ups, “reply by”, and application deadlines.</p>
+        </div>
+
+        <div class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-coral/10 ring-1 ring-brand-coral/15">
+              <i data-lucide="bell" class="h-5 w-5 text-brand-coral"></i>
+            </span>
+            <div class="text-sm font-semibold">Reminders</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Email reminders so you never forget a step.</p>
+        </div>
+
+        <div class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-gold/15 ring-1 ring-brand-gold/25">
+              <i data-lucide="file-text" class="h-5 w-5 text-slate-900"></i>
+            </span>
+            <div class="text-sm font-semibold">PDF export</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">Generate a clean report to share anytime.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-10 sm:py-14">
+      <div class="max-w-2xl">
+        <h2 class="text-3xl font-semibold tracking-tight">Pricing</h2>
+        <p class="mt-3 text-slate-700">Free during beta. You’ll get notice before any paid plans exist.</p>
+      </div>
+
+      <div class="mt-8 grid gap-4 lg:grid-cols-3">
+        <div class="grain lg:col-span-2 rounded-[2rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div class="inline-flex items-center gap-2 rounded-full bg-brand-teal/10 px-3 py-1 text-xs font-semibold text-brand-teal ring-1 ring-brand-teal/20">
+                <i data-lucide="badge-check" class="h-4 w-4"></i>
+                <span>Free during beta</span>
+              </div>
+              <div class="mt-3 text-sm font-semibold">All core features included</div>
+              <div class="mt-2 text-4xl font-semibold">€0</div>
+            </div>
+            <a href="/signup"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-teal px-5 py-3 text-center text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
+              <i data-lucide="user-plus" class="h-4 w-4"></i>
+              <span>Create free account</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="grain rounded-[2rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl bg-brand-coral/10 ring-1 ring-brand-coral/15">
+              <i data-lucide="shield" class="h-5 w-5 text-brand-coral"></i>
+            </span>
+            <div class="text-sm font-semibold">Beta promise</div>
+          </div>
+          <p class="mt-3 text-sm text-slate-700">
+            ApplyTrack stays free during beta. If paid plans come later, early users get a generous discount.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-10 sm:py-14">
+      <div class="max-w-2xl">
+        <h2 class="text-3xl font-semibold tracking-tight">FAQ</h2>
+        <p class="mt-3 text-slate-700">Quick answers about the product and beta.</p>
+      </div>
+
+      <div class="mt-8 grid gap-4 lg:grid-cols-2">
+        <details class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <summary class="cursor-pointer text-sm font-semibold">Is it really free?</summary>
+          <p class="mt-2 text-sm text-slate-700">Yes. During beta, it’s free. If paid plans come later, you’ll get notice ahead of time.</p>
+        </details>
+
+        <details class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <summary class="cursor-pointer text-sm font-semibold">How do I log in?</summary>
+          <p class="mt-2 text-sm text-slate-700">Email login first. You can add password login later if you want.</p>
+        </details>
+
+        <details class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <summary class="cursor-pointer text-sm font-semibold">Is my data private?</summary>
+          <p class="mt-2 text-sm text-slate-700">Yes. Keep it minimal and secure. You control what you store and export.</p>
+        </details>
+
+        <details class="grain rounded-[1.75rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5">
+          <summary class="cursor-pointer text-sm font-semibold">Can I export a report?</summary>
+          <p class="mt-2 text-sm text-slate-700">Yes. You can generate a clean PDF summary for mentoring, coaching, or personal review.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="pb-16 pt-10 sm:pt-14">
+      <div class="grain rounded-[2rem] bg-white/85 p-6 shadow-soft ring-1 ring-black/5 sm:p-8">
+        <div class="grid gap-6 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h3 class="text-2xl font-semibold tracking-tight">Contact</h3>
+            <p class="mt-2 text-sm text-slate-700">Early access feedback, feature requests, or bug reports.</p>
+
+            <div class="mt-4 flex items-center gap-2 text-sm text-slate-700">
+              <i data-lucide="mail" class="h-4 w-4 text-brand-teal"></i>
+              <span>support@stanchev.dev</span>
+            </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <footer class="mx-auto mt-8 max-w-6xl px-2 text-center text-xs text-slate-600">
+        <div class="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+          <span>© <span id="year"></span> ApplyTrack</span>
+          <span class="hidden sm:inline">•</span>
+          <a href="#" class="hover:text-slate-900">Privacy</a>
+          <span class="hidden sm:inline">•</span>
+          <a href="#" class="hover:text-slate-900">Terms</a>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <!-- Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    lucide.createIcons();
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    menuBtn?.addEventListener("click", () => {
+      const willOpen = mobileMenu.classList.contains("hidden");
+      mobileMenu.classList.toggle("hidden");
+      menuBtn.setAttribute("aria-expanded", String(willOpen));
+    });
+
+    // Close mobile menu when clicking an in-page link
+    document.querySelectorAll("#mobileMenu a[href^='#']").forEach(a => {
+      a.addEventListener("click", () => {
+        mobileMenu.classList.add("hidden");
+        menuBtn?.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    // Smooth scroll with correct offset
+    const header = document.getElementById("siteHeader");
+    const headerOffset = () => (header?.offsetHeight || 0) + 16;
+
+    function smoothScrollTo(hash) {
+      if (!hash || hash === "#") return;
+
+      if (hash === "#top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const el = document.querySelector(hash);
+      if (!el) return;
+
+      const y = el.getBoundingClientRect().top + window.pageYOffset - headerOffset();
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+
+    document.querySelectorAll("a[href^='#']").forEach(a => {
+      a.addEventListener("click", (e) => {
+        const href = a.getAttribute("href");
+        if (!href || href === "#") return;
+
+        // only handle in-page anchors
+        if (!href.startsWith("#")) return;
+
+        e.preventDefault();
+        history.replaceState(null, "", href);
+        setActive(href);
+        smoothScrollTo(href);
+      });
+    });
+
+    // Navbar scroll state
+    const siteHeader = document.getElementById("siteHeader");
+    const onScrollHeader = () => siteHeader?.classList.toggle("nav-scrolled", window.scrollY > 8);
+    window.addEventListener("scroll", onScrollHeader, { passive: true });
+    onScrollHeader();
+
+    // --------- Section Tracker (FIXED, deterministic scrollspy) ----------
+    const navLinks = Array.from(document.querySelectorAll("a[data-nav][href^='#']"));
+    const sections = Array.from(document.querySelectorAll("section[id]"));
+
+    function setActive(hash) {
+      navLinks.forEach(link => {
+        const on = link.getAttribute("href") === hash;
+
+        link.classList.toggle("bg-slate-50", on);
+        link.classList.toggle("text-slate-900", on);
+        link.classList.toggle("text-slate-700", !on);
+
+        link.classList.toggle("ring-1", on);
+        link.classList.toggle("ring-black/5", on);
+
+        if (on) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+    }
+
+    // RAF-throttled scrollspy
+    let ticking = false;
+
+    function updateActiveFromScroll() {
+      const pos = window.scrollY + headerOffset() + 8;
+
+      // pick the last section whose top is above the scroll position
+      let active = "";
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const s = sections[i];
+        if (pos >= s.offsetTop) {
+          active = "#" + s.id;
+          break;
+        }
+      }
+
+      // near top -> no active (or set to first section if you prefer)
+      if (window.scrollY < 40) active = "";
+
+      setActive(active);
+    }
+
+    function onScrollSpy() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateActiveFromScroll();
+        ticking = false;
+      });
+    }
+
+    window.addEventListener("scroll", onScrollSpy, { passive: true });
+    window.addEventListener("resize", () => updateActiveFromScroll(), { passive: true });
+
+    // initial state
+    if (location.hash) {
+      setActive(location.hash);
+      // ensure correct offset scroll when loading with hash
+      setTimeout(() => smoothScrollTo(location.hash), 30);
+    } else {
+      updateActiveFromScroll();
+    }
+
+    function updateActiveFromScroll() {
+  const probe = headerOffset() + 12; // a line just under the sticky header
+  let active = "";
+
+  for (const s of sections) {
+    const r = s.getBoundingClientRect();
+    if (r.top <= probe && r.bottom > probe) {
+      active = "#" + s.id;
+      break;
+    }
+  }
+
+  const nearBottom =
+    window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+  if (nearBottom) active = "#contact";
+
+  // Optional: near top = none active
+  if (window.scrollY < 40) active = "";
+
+  setActive(active);
+}
+
+  </script>
+</body>
+</html>

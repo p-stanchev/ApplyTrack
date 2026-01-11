@@ -1,0 +1,1201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApplyTrack — Applications</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: { teal: "#0D9488", coral: "#FB7185", gold: "#FBBF24" } },
+          boxShadow: {
+            soft: "0 12px 40px rgba(15, 23, 42, 0.10)",
+            soft2: "0 16px 60px rgba(15, 23, 42, 0.12)",
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    * { scrollbar-width: thin; scrollbar-color: rgba(13,148,136,.55) rgba(15,23,42,.08); }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track { background: rgba(15,23,42,.06); border-left: 1px solid rgba(15,23,42,.06); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(13,148,136,.70), rgba(251,113,133,.55), rgba(251,191,36,.55));
+      border-radius: 999px; border: 3px solid rgba(255,255,255,.82);
+      box-shadow: 0 10px 22px rgba(15,23,42,.12);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(13,148,136,.92), rgba(251,113,133,.70), rgba(251,191,36,.70));
+    }
+
+    .grain{ position: relative; isolation: isolate; overflow: visible; }
+    .grain::before{
+      content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:0;
+      background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20width%3D'240'%20height%3D'240'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.9'%20numOctaves%3D'3'%20stitchTiles%3D'stitch'/%3E%3C/filter%3E%3Crect%20width%3D'240'%20height%3D'240'%20filter%3D'url(%23n)'%20opacity%3D'.18'/%3E%3C/svg%3E");
+      background-repeat:repeat; background-size:240px 240px;
+      opacity:.22; mix-blend-mode:multiply; filter:contrast(140%);
+    }
+    .grain > *{ position: relative; z-index: 1; }
+
+    body.modal-open { overflow: hidden; }
+  </style>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="shortcut icon" href="/favicon.ico">
+
+</head>
+
+<body class="bg-white text-slate-900">
+  <!-- Background -->
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-32 -left-32 h-[28rem] w-[28rem] rounded-full bg-brand-teal/18 blur-3xl"></div>
+    <div class="absolute top-10 -right-40 h-[34rem] w-[34rem] rounded-full bg-brand-coral/14 blur-3xl"></div>
+    <div class="absolute bottom-[-12rem] left-1/3 h-[34rem] w-[34rem] rounded-full bg-brand-gold/14 blur-3xl"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white"></div>
+  </div>
+
+  <header class="sticky top-0 z-40">
+    <div class="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
+      <div class="rounded-[1.75rem] bg-gradient-to-r from-brand-teal/35 via-brand-gold/25 to-brand-coral/35 p-[1px] shadow-soft2">
+        <div class="grain rounded-[1.75rem] bg-white/80 backdrop-blur-xl ring-1 ring-black/5">
+          <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3">
+              <span class="grid h-11 w-11 place-items-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
+                <i data-lucide="briefcase" class="h-5 w-5 text-brand-teal"></i>
+              </span>
+              <div class="leading-tight">
+                <div class="text-sm font-semibold tracking-tight">ApplyTrack</div>
+                <div class="text-xs text-slate-600">Applications</div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <div class="text-xs text-slate-600">
+                Signed in as <span id="userEmail" class="font-semibold text-slate-900">—</span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button id="btnAdd"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
+                  <i data-lucide="plus" class="h-4 w-4"></i>
+                  <span>Add</span>
+                </button>
+
+                <div class="relative">
+                  <button id="btnExport"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    <i data-lucide="download" class="h-4 w-4 text-brand-coral"></i>
+                    <span>Export</span>
+                    <i data-lucide="chevron-down" class="h-4 w-4 text-slate-600"></i>
+                  </button>
+
+                  <div id="exportMenu"
+                    class="hidden absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl bg-white shadow-soft2 ring-1 ring-black/10">
+                    <button id="btnExportPdfCurrent" class="w-full px-4 py-3 text-left text-sm hover:bg-slate-50">
+                      Export current view as PDF
+                    </button>
+                    <button id="btnExportIcsAll" class="w-full px-4 py-3 text-left text-sm hover:bg-slate-50">
+                      Export upcoming reminders as .ics
+                    </button>
+                  </div>
+                </div>
+
+                <button id="btnSignOut"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                  <i data-lucide="log-out" class="h-4 w-4 text-slate-600"></i>
+                  <span>Sign out</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <!-- Controls -->
+    <section class="mb-4 grid gap-3 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <div class="flex items-center gap-2 rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <i data-lucide="search" class="h-4 w-4 text-slate-500"></i>
+          <input id="q" type="text" placeholder="Search company, position, notes…"
+            class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
+        </div>
+      </div>
+
+      <div class="lg:col-span-3">
+        <div class="rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <label class="text-xs font-semibold text-slate-700">Status</label>
+          <select id="statusFilter" class="mt-2 w-full rounded-xl bg-slate-50 px-3 py-2 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+            <option value="all">All</option>
+            <option value="applied">Applied</option>
+            <option value="screening">Screening</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer</option>
+            <option value="rejected">Rejected</option>
+            <option value="withdrawn">Withdrawn</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2">
+        <div class="rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <label class="text-xs font-semibold text-slate-700">Sort</label>
+          <select id="sortBy" class="mt-2 w-full rounded-xl bg-slate-50 px-3 py-2 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+            <option value="created_desc">Newest</option>
+            <option value="created_asc">Oldest</option>
+            <option value="applied_desc">Applied date (newest)</option>
+            <option value="applied_asc">Applied date (oldest)</option>
+            <option value="next_asc">Next action (soonest)</option>
+            <option value="next_desc">Next action (latest)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2">
+        <div class="rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <label class="text-xs font-semibold text-slate-700">Reminders</label>
+          <label class="mt-2 flex items-center gap-2 text-sm">
+            <input id="onlyWithReminders" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-teal focus:ring-brand-teal" />
+            <span class="text-slate-700">Only with next action</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="overflow-hidden rounded-[1.75rem] bg-white/90 shadow-soft2 ring-1 ring-black/5">
+      <div class="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="table" class="h-4 w-4 text-slate-600"></i>
+          <div class="text-sm font-semibold">Applications</div>
+          <div id="countPill" class="ml-2 rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">0</div>
+        </div>
+
+        <div id="loadingPill" class="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
+          <span class="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-teal"></span>
+          Loading
+        </div>
+      </div>
+
+      <div class="overflow-auto">
+        <table class="min-w-[980px] w-full text-sm">
+          <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-5 py-3">Company</th>
+              <th class="px-5 py-3">Position</th>
+              <th class="px-5 py-3">Status</th>
+              <th class="px-5 py-3">Applied</th>
+              <th class="px-5 py-3">Next action</th>
+              <th class="px-5 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <div id="emptyState" class="hidden px-6 py-10">
+        <div class="rounded-3xl bg-slate-50 p-6 ring-1 ring-black/5">
+          <div class="flex items-start gap-3">
+            <div class="grid h-10 w-10 place-items-center rounded-2xl bg-white ring-1 ring-black/5">
+              <i data-lucide="sparkles" class="h-5 w-5 text-brand-gold"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold">No applications yet</div>
+              <div class="mt-1 text-sm text-slate-700">Add your first application to start tracking.</div>
+              <button id="btnAddEmpty"
+                class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
+                <i data-lucide="plus" class="h-4 w-4"></i>
+                <span>Add application</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reminders -->
+    <section class="mt-6 rounded-[1.75rem] bg-white/90 p-5 shadow-soft2 ring-1 ring-black/5">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="calendar-clock" class="h-4 w-4 text-slate-600"></i>
+          <div class="text-sm font-semibold">Upcoming reminders</div>
+        </div>
+        <button id="btnExportIcsPanel"
+          class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+          <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
+          <span>Download .ics</span>
+        </button>
+      </div>
+
+      <div id="remindersMeta" class="mt-2 text-sm text-slate-600">—</div>
+      <div id="remindersList" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+
+      <div class="mt-4 rounded-2xl bg-slate-50 p-4 text-xs text-slate-600 ring-1 ring-black/5">
+        Calendar notifications are best handled via <span class="font-semibold text-slate-900">.ics</span> files.
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2">
+    <div class="rounded-2xl bg-slate-900 px-4 py-3 text-sm text-white shadow-soft2">
+      <span id="toastText"></span>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="modal" class="fixed inset-0 z-[60] hidden">
+    <div id="modalBackdrop" class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"></div>
+
+    <div class="relative mx-auto mt-10 w-[94%] max-w-2xl sm:mt-16">
+      <div class="grain rounded-[2rem] bg-white/92 p-6 shadow-soft2 ring-1 ring-black/10 sm:p-8">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div id="modalTitle" class="text-lg font-semibold tracking-tight">Add application</div>
+            <div class="mt-1 text-xs text-slate-600">Fields marked * are required.</div>
+          </div>
+          <button id="modalClose" class="rounded-xl bg-white p-2 shadow-soft ring-1 ring-black/5 hover:bg-slate-50" aria-label="Close">
+            <i data-lucide="x" class="h-5 w-5"></i>
+          </button>
+        </div>
+
+        <form id="form" class="mt-6 grid gap-4">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Company *</label>
+              <input id="fCompany" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Company" required />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Position *</label>
+              <input id="fPosition" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Position" required />
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Status *</label>
+              <select id="fStatus" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+                <option value="applied">Applied</option>
+                <option value="screening">Screening</option>
+                <option value="interview">Interview</option>
+                <option value="offer">Offer</option>
+                <option value="rejected">Rejected</option>
+                <option value="withdrawn">Withdrawn</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Applied date</label>
+              <input id="fApplied" type="date" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" />
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Next action</label>
+              <input id="fNext" type="date" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" />
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Location</label>
+              <input id="fLocation" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Vienna / Remote / Hybrid" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-700">Job URL</label>
+              <input id="fUrl" type="url" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="https://…" />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-700">Notes</label>
+            <textarea id="fNotes" rows="4" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="What happened? Next steps?"></textarea>
+          </div>
+
+          <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2">
+              <button id="btnDeleteInModal" type="button"
+                class="hidden inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                <i data-lucide="trash-2" class="h-4 w-4 text-brand-coral"></i>
+                <span>Delete</span>
+              </button>
+
+              <button id="btnIcsInModal" type="button"
+                class="hidden inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
+                <span>.ics</span>
+              </button>
+
+              <button id="btnPdfInModal" type="button"
+                class="hidden inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                <i data-lucide="file-text" class="h-4 w-4 text-brand-gold"></i>
+                <span>PDF</span>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-end gap-2">
+              <button id="modalCancel" type="button"
+                class="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                <i data-lucide="x" class="h-4 w-4"></i>
+                <span>Cancel</span>
+              </button>
+
+              <button id="modalSave" type="submit"
+                class="inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-5 py-3 text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
+                <i data-lucide="check" class="h-4 w-4"></i>
+                <span>Save</span>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div id="modalError" class="mt-4 hidden rounded-2xl bg-brand-coral/10 p-3 ring-1 ring-brand-coral/20">
+          <div class="flex items-start gap-2">
+            <i data-lucide="triangle-alert" class="mt-0.5 h-4 w-4 text-brand-coral"></i>
+            <div id="modalErrorText" class="text-sm text-slate-900"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    (function () {
+      lucide.createIcons();
+
+      const SUPABASE_URL = "https://jlylmqzcfxlyuzekftmc.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_-IIYfsqYnZQFzrkiAFBkzQ_zPWnzp4m";
+
+      const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: true, detectSessionInUrl: true }
+      });
+
+      // Elements
+      const elUserEmail = document.getElementById("userEmail");
+      const elRows = document.getElementById("rows");
+      const elCount = document.getElementById("countPill");
+      const elLoading = document.getElementById("loadingPill");
+      const elEmpty = document.getElementById("emptyState");
+
+      const elQ = document.getElementById("q");
+      const elStatusFilter = document.getElementById("statusFilter");
+      const elSortBy = document.getElementById("sortBy");
+      const elOnlyRem = document.getElementById("onlyWithReminders");
+
+      const btnAdd = document.getElementById("btnAdd");
+      const btnAddEmpty = document.getElementById("btnAddEmpty");
+      const btnSignOut = document.getElementById("btnSignOut");
+
+      const btnExport = document.getElementById("btnExport");
+      const exportMenu = document.getElementById("exportMenu");
+      const btnExportPdfCurrent = document.getElementById("btnExportPdfCurrent");
+      const btnExportIcsAll = document.getElementById("btnExportIcsAll");
+      const btnExportIcsPanel = document.getElementById("btnExportIcsPanel");
+
+      const elRemindersMeta = document.getElementById("remindersMeta");
+      const elRemindersList = document.getElementById("remindersList");
+
+      // Modal
+      const modal = document.getElementById("modal");
+      const modalBackdrop = document.getElementById("modalBackdrop");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalClose = document.getElementById("modalClose");
+      const modalCancel = document.getElementById("modalCancel");
+
+      const modalError = document.getElementById("modalError");
+      const modalErrorText = document.getElementById("modalErrorText");
+
+      const fCompany = document.getElementById("fCompany");
+      const fPosition = document.getElementById("fPosition");
+      const fStatus = document.getElementById("fStatus");
+      const fApplied = document.getElementById("fApplied");
+      const fNext = document.getElementById("fNext");
+      const fLocation = document.getElementById("fLocation");
+      const fUrl = document.getElementById("fUrl");
+      const fNotes = document.getElementById("fNotes");
+
+      const btnDeleteInModal = document.getElementById("btnDeleteInModal");
+      const btnIcsInModal = document.getElementById("btnIcsInModal");
+      const btnPdfInModal = document.getElementById("btnPdfInModal");
+
+      const form = document.getElementById("form");
+
+      // Toast
+      const toast = document.getElementById("toast");
+      const toastText = document.getElementById("toastText");
+      let toastTimer = null;
+
+      function showToast(msg) {
+        toastText.textContent = msg;
+        toast.classList.remove("hidden");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add("hidden"), 2600);
+      }
+
+      function setLoading(isLoading) {
+        if (isLoading) elLoading.classList.remove("hidden");
+        else elLoading.classList.add("hidden");
+      }
+
+      function escapeHtml(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function fmtDate(d) { return d ? String(d) : ""; }
+
+      function statusPill(status) {
+        const map = {
+          applied:   "bg-brand-teal/12 text-slate-900 ring-1 ring-brand-teal/25",
+          screening: "bg-brand-gold/18 text-slate-900 ring-1 ring-brand-gold/30",
+          interview: "bg-brand-coral/12 text-slate-900 ring-1 ring-brand-coral/25",
+          offer:     "bg-emerald-500/12 text-slate-900 ring-1 ring-emerald-500/25",
+          rejected:  "bg-slate-900/8 text-slate-900 ring-1 ring-black/10",
+          withdrawn: "bg-slate-900/8 text-slate-900 ring-1 ring-black/10",
+        };
+        const cls = map[status] || "bg-slate-100 text-slate-800 ring-1 ring-black/5";
+        const label = (status || "").toUpperCase();
+        return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${cls}">${escapeHtml(label)}</span>`;
+      }
+
+      function cleanFileName(s) {
+        return String(s || "export").replace(/[^\w\-]+/g, "_").slice(0, 80);
+      }
+
+      function toIcsDate(dateStr) {
+        const [y, m, d] = String(dateStr).split("-");
+        return `${y}${m}${d}`;
+      }
+
+      function downloadBlob(filename, mime, content) {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1200);
+      }
+
+      // State
+      let session = null;
+      let apps = [];
+      let editingId = null;
+
+      // Auth: handle PKCE `code` param and remove it from URL
+      async function handleOAuthCodeIfPresent() {
+        const url = new URL(location.href);
+        const code = url.searchParams.get("code");
+        if (!code) return;
+
+        const { error } = await sb.auth.exchangeCodeForSession(code);
+        url.searchParams.delete("code");
+        url.searchParams.delete("state");
+        history.replaceState({}, document.title, url.toString());
+        if (error) showToast("OAuth session exchange failed.");
+      }
+
+      async function requireSession() {
+        await handleOAuthCodeIfPresent();
+
+        const { data, error } = await sb.auth.getSession();
+        if (error || !data?.session) {
+          location.href = "./login.html";
+          return null;
+        }
+        session = data.session;
+        elUserEmail.textContent = session.user.email || session.user.user_metadata?.email || "Unknown";
+        return session;
+      }
+
+      sb.auth.onAuthStateChange((event, s) => {
+        if (!s) {
+          location.href = "./login.html";
+          return;
+        }
+        session = s;
+        elUserEmail.textContent = session.user.email || session.user.user_metadata?.email || "Unknown";
+      });
+
+      // Data fetch
+      async function fetchApps() {
+        setLoading(true);
+        const { data, error } = await sb
+          .from("applications")
+          .select("*")
+          .order("created_at", { ascending: false });
+        setLoading(false);
+
+        if (error) {
+          showToast(error.message || "Failed to load applications");
+          apps = [];
+          render();
+          return;
+        }
+        apps = Array.isArray(data) ? data : [];
+        render();
+      }
+
+      function getFilteredApps() {
+        const q = (elQ.value || "").trim().toLowerCase();
+        const status = elStatusFilter.value;
+        const onlyRem = elOnlyRem.checked;
+        const sortBy = elSortBy.value;
+
+        let list = apps.slice();
+
+        if (q) {
+          list = list.filter(a => {
+            const hay = [a.company, a.position, a.notes, a.location, a.job_url]
+              .map(x => String(x || "").toLowerCase())
+              .join(" ");
+            return hay.includes(q);
+          });
+        }
+
+        if (status !== "all") list = list.filter(a => a.status === status);
+        if (onlyRem) list = list.filter(a => !!a.next_action_at);
+
+        const getDate = (v) => v ? new Date(v + "T00:00:00") : null;
+
+        list.sort((A, B) => {
+          if (sortBy === "created_desc") return new Date(B.created_at) - new Date(A.created_at);
+          if (sortBy === "created_asc") return new Date(A.created_at) - new Date(B.created_at);
+
+          if (sortBy === "applied_desc") return (getDate(B.applied_at) || new Date(0)) - (getDate(A.applied_at) || new Date(0));
+          if (sortBy === "applied_asc") return (getDate(A.applied_at) || new Date(8640000000000000)) - (getDate(B.applied_at) || new Date(8640000000000000));
+
+          if (sortBy === "next_asc") return (getDate(A.next_action_at) || new Date(8640000000000000)) - (getDate(B.next_action_at) || new Date(8640000000000000));
+          if (sortBy === "next_desc") return (getDate(B.next_action_at) || new Date(0)) - (getDate(A.next_action_at) || new Date(0));
+
+          return 0;
+        });
+
+        return list;
+      }
+
+      // CRUD
+      async function insertApp(payload) {
+        setLoading(true);
+        const { error } = await sb.from("applications").insert(payload);
+        setLoading(false);
+        if (error) {
+          showModalError(error.message || "Insert failed");
+          return false;
+        }
+        return true;
+      }
+
+      async function updateApp(id, patch, { toastMsg = null } = {}) {
+        setLoading(true);
+        const { error } = await sb.from("applications").update(patch).eq("id", id);
+        setLoading(false);
+
+        if (error) {
+          showToast(error.message || "Update failed");
+          await fetchApps();
+          return false;
+        }
+
+        const i = apps.findIndex(x => x.id === id);
+        if (i >= 0) apps[i] = { ...apps[i], ...patch };
+        if (toastMsg) showToast(toastMsg);
+        return true;
+      }
+
+      async function deleteApp(id) {
+        const a = apps.find(x => x.id === id);
+        const label = a ? `${a.company} — ${a.position}` : "this application";
+        if (!confirm(`Delete ${label}?`)) return;
+
+        setLoading(true);
+        const { error } = await sb.from("applications").delete().eq("id", id);
+        setLoading(false);
+
+        if (error) {
+          showToast(error.message || "Delete failed");
+          return;
+        }
+
+        apps = apps.filter(x => x.id !== id);
+        showToast("Deleted");
+        render();
+      }
+
+      // Modal helpers
+      function showModalError(msg) {
+        modalErrorText.textContent = msg;
+        modalError.classList.remove("hidden");
+        lucide.createIcons();
+      }
+      function clearModalError() {
+        modalError.classList.add("hidden");
+        modalErrorText.textContent = "";
+      }
+
+      function openModal() {
+        clearModalError();
+        modal.classList.remove("hidden");
+        document.body.classList.add("modal-open");
+        lucide.createIcons();
+      }
+      function closeModal() {
+        modal.classList.add("hidden");
+        document.body.classList.remove("modal-open");
+        editingId = null;
+      }
+
+      function resetForm() {
+        fCompany.value = "";
+        fPosition.value = "";
+        fStatus.value = "applied";
+        fApplied.value = "";
+        fNext.value = "";
+        fLocation.value = "";
+        fUrl.value = "";
+        fNotes.value = "";
+      }
+
+      function openModalForAdd() {
+        editingId = null;
+        modalTitle.textContent = "Add application";
+        resetForm();
+
+        btnDeleteInModal.classList.add("hidden");
+        btnIcsInModal.classList.add("hidden");
+        btnPdfInModal.classList.add("hidden");
+
+        openModal();
+        fCompany.focus();
+      }
+
+      function openModalForEdit(a) {
+        editingId = a.id;
+        modalTitle.textContent = "Edit application";
+
+        fCompany.value = a.company || "";
+        fPosition.value = a.position || "";
+        fStatus.value = a.status || "applied";
+        fApplied.value = a.applied_at || "";
+        fNext.value = a.next_action_at || "";
+        fLocation.value = a.location || "";
+        fUrl.value = a.job_url || "";
+        fNotes.value = a.notes || "";
+
+        btnDeleteInModal.classList.remove("hidden");
+        btnPdfInModal.classList.remove("hidden");
+        if (a.next_action_at) btnIcsInModal.classList.remove("hidden");
+        else btnIcsInModal.classList.add("hidden");
+
+        openModal();
+        fCompany.focus();
+      }
+
+      modalBackdrop.addEventListener("click", closeModal);
+      modalClose.addEventListener("click", closeModal);
+      modalCancel.addEventListener("click", closeModal);
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
+      });
+
+      btnDeleteInModal.addEventListener("click", async () => {
+        if (!editingId) return;
+        closeModal();
+        await deleteApp(editingId);
+      });
+
+      btnPdfInModal.addEventListener("click", () => {
+        if (!editingId) return;
+        const a = apps.find(x => x.id === editingId);
+        if (a) exportPdfSingle(a);
+      });
+
+      btnIcsInModal.addEventListener("click", () => {
+        if (!editingId) return;
+        const a = apps.find(x => x.id === editingId);
+        if (a) exportIcsSingle(a);
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearModalError();
+
+        const company = fCompany.value.trim();
+        const position = fPosition.value.trim();
+        const status = fStatus.value;
+
+        if (!company || !position) {
+          showModalError("Company and Position are required.");
+          return;
+        }
+
+        const payload = {
+          company,
+          position,
+          status,
+          applied_at: fApplied.value || null,
+          next_action_at: fNext.value || null,
+          location: fLocation.value.trim() || null,
+          job_url: fUrl.value.trim() || null,
+          notes: fNotes.value.trim() || null,
+        };
+
+        if (!editingId) {
+          payload.user_id = session.user.id;
+          const ok = await insertApp(payload);
+          if (!ok) return;
+
+          closeModal();
+          showToast("Added");
+          await fetchApps();
+          return;
+        }
+
+        const ok = await updateApp(editingId, payload, { toastMsg: "Saved" });
+        if (!ok) return;
+
+        closeModal();
+        render();
+      });
+
+      // Reminders + exports
+      function exportPdfSingle(a) {
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF) return showToast("PDF library not loaded.");
+
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+        const margin = 48;
+        let y = margin;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("ApplyTrack — Application", margin, y);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        y += 22;
+
+        const lines = [
+          `Company: ${a.company || ""}`,
+          `Position: ${a.position || ""}`,
+          `Status: ${a.status || ""}`,
+          `Applied: ${a.applied_at || ""}`,
+          `Next action: ${a.next_action_at || ""}`,
+          `Location: ${a.location || ""}`,
+          `Job URL: ${a.job_url || ""}`,
+        ];
+
+        for (const line of lines) { doc.text(line, margin, y); y += 16; }
+        y += 10;
+
+        const notes = String(a.notes || "").trim();
+        if (notes) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Notes", margin, y);
+          y += 14;
+          doc.setFont("helvetica", "normal");
+          const wrapped = doc.splitTextToSize(notes, 595 - margin * 2);
+          doc.text(wrapped, margin, y);
+        }
+
+        const filename = `ApplyTrack_${cleanFileName(a.company)}_${cleanFileName(a.position)}.pdf`;
+        doc.save(filename);
+        showToast("PDF downloaded");
+      }
+
+      function exportPdfCurrentView() {
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF) return showToast("PDF library not loaded.");
+
+        const list = getFilteredApps();
+        if (!list.length) return showToast("Nothing to export.");
+
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("ApplyTrack — Applications (Current View)", 48, 54);
+
+        const body = list.map(a => [
+          String(a.company || ""),
+          String(a.position || ""),
+          String(a.status || ""),
+          String(a.applied_at || ""),
+          String(a.next_action_at || ""),
+        ]);
+
+        doc.autoTable({
+          startY: 70,
+          head: [["Company", "Position", "Status", "Applied", "Next action"]],
+          body,
+          styles: { font: "helvetica", fontSize: 9, cellPadding: 6 },
+          headStyles: { fillColor: [245, 246, 248] },
+          theme: "grid",
+          margin: { left: 48, right: 48 },
+        });
+
+        doc.save(`ApplyTrack_view_${new Date().toISOString().slice(0,10)}.pdf`);
+        showToast("PDF downloaded");
+      }
+
+      function exportIcsSingle(a) {
+        if (!a.next_action_at) return showToast("No next action date set.");
+
+        const dt = toIcsDate(a.next_action_at);
+        const uid = `${a.id}@applytrack`;
+        const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+
+        const summary = `ApplyTrack: Follow up — ${a.company} (${a.position})`;
+        const desc = [
+          `Company: ${a.company || ""}`,
+          `Position: ${a.position || ""}`,
+          `Status: ${a.status || ""}`,
+          a.job_url ? `Job URL: ${a.job_url}` : "",
+          a.notes ? `Notes: ${a.notes}` : ""
+        ].filter(Boolean).join("\\n");
+
+        const ics =
+`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ApplyTrack//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${stamp}
+DTSTART;VALUE=DATE:${dt}
+DTEND;VALUE=DATE:${dt}
+SUMMARY:${summary.replace(/\n/g," ")}
+DESCRIPTION:${desc.replace(/\n/g,"\\n")}
+END:VEVENT
+END:VCALENDAR
+`;
+
+        downloadBlob(
+          `ApplyTrack_${cleanFileName(a.company)}_${cleanFileName(a.position)}.ics`,
+          "text/calendar;charset=utf-8",
+          ics
+        );
+        showToast(".ics downloaded");
+      }
+
+      function exportIcsAllUpcoming() {
+        const list = apps
+          .filter(a => !!a.next_action_at)
+          .slice()
+          .sort((A, B) => new Date(A.next_action_at + "T00:00:00") - new Date(B.next_action_at + "T00:00:00"));
+
+        if (!list.length) return showToast("No reminders to export.");
+
+        const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+
+        const events = list.map(a => {
+          const dt = toIcsDate(a.next_action_at);
+          const uid = `${a.id}@applytrack`;
+          const summary = `ApplyTrack: Follow up — ${a.company} (${a.position})`;
+          const desc = [
+            `Company: ${a.company || ""}`,
+            `Position: ${a.position || ""}`,
+            `Status: ${a.status || ""}`,
+            a.job_url ? `Job URL: ${a.job_url}` : "",
+            a.notes ? `Notes: ${a.notes}` : ""
+          ].filter(Boolean).join("\\n");
+
+          return `BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${stamp}
+DTSTART;VALUE=DATE:${dt}
+DTEND;VALUE=DATE:${dt}
+SUMMARY:${summary.replace(/\n/g," ")}
+DESCRIPTION:${desc.replace(/\n/g,"\\n")}
+END:VEVENT`;
+        }).join("\n");
+
+        const ics =
+`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ApplyTrack//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+${events}
+END:VCALENDAR
+`;
+
+        downloadBlob(`ApplyTrack_reminders_${new Date().toISOString().slice(0,10)}.ics`, "text/calendar;charset=utf-8", ics);
+        showToast(".ics downloaded");
+      }
+
+      function renderReminders() {
+        const list = apps
+          .filter(a => !!a.next_action_at)
+          .slice()
+          .sort((A, B) => new Date(A.next_action_at + "T00:00:00") - new Date(B.next_action_at + "T00:00:00"));
+
+        const today = new Date(); today.setHours(0,0,0,0);
+        const overdue = list.filter(a => new Date(a.next_action_at + "T00:00:00") < today);
+        const upcoming = list.filter(a => new Date(a.next_action_at + "T00:00:00") >= today);
+
+        elRemindersMeta.textContent = `${list.length} total · ${overdue.length} overdue · ${upcoming.length} upcoming`;
+
+        elRemindersList.innerHTML = "";
+        if (!list.length) {
+          elRemindersList.innerHTML = `
+            <div class="sm:col-span-2 lg:col-span-3 rounded-3xl bg-slate-50 p-6 ring-1 ring-black/5">
+              <div class="flex items-start gap-3">
+                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-white ring-1 ring-black/5">
+                  <i data-lucide="calendar" class="h-5 w-5 text-brand-teal"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold">No reminders set</div>
+                  <div class="mt-1 text-sm text-slate-700">Add a “Next action” date to any application.</div>
+                </div>
+              </div>
+            </div>`;
+          lucide.createIcons();
+          return;
+        }
+
+        for (const a of list.slice(0, 9)) {
+          const d = a.next_action_at;
+          const isOverdue = new Date(d + "T00:00:00") < today;
+
+          elRemindersList.insertAdjacentHTML("beforeend", `
+            <div class="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="text-sm font-semibold text-slate-900">${escapeHtml(a.company)} <span class="text-slate-500 font-normal">— ${escapeHtml(a.position)}</span></div>
+                  <div class="mt-2">
+                    <span class="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold ${isOverdue ? "bg-brand-coral/12 ring-1 ring-brand-coral/25" : "bg-brand-gold/18 ring-1 ring-brand-gold/30"} text-slate-900">
+                      <i data-lucide="${isOverdue ? "triangle-alert" : "calendar-clock"}" class="h-4 w-4 ${isOverdue ? "text-brand-coral" : "text-slate-700"}"></i>
+                      <span>${escapeHtml(d)}</span>
+                    </span>
+                  </div>
+                </div>
+                <button data-remedit="${escapeHtml(a.id)}" class="rounded-2xl bg-white p-2 ring-1 ring-black/5 hover:bg-slate-50" title="Edit">
+                  <i data-lucide="pencil" class="h-4 w-4 text-slate-700"></i>
+                </button>
+              </div>
+
+              <div class="mt-3 flex items-center gap-2">
+                <button data-remics="${escapeHtml(a.id)}"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                  <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
+                  <span>.ics</span>
+                </button>
+                <button data-rempdf="${escapeHtml(a.id)}"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                  <i data-lucide="file-text" class="h-4 w-4 text-brand-gold"></i>
+                  <span>PDF</span>
+                </button>
+              </div>
+            </div>
+          `);
+        }
+
+        elRemindersList.querySelectorAll("[data-remedit]").forEach(b => {
+          b.addEventListener("click", () => {
+            const id = b.getAttribute("data-remedit");
+            const a = apps.find(x => x.id === id);
+            if (a) openModalForEdit(a);
+          });
+        });
+        elRemindersList.querySelectorAll("[data-remics]").forEach(b => {
+          b.addEventListener("click", () => {
+            const id = b.getAttribute("data-remics");
+            const a = apps.find(x => x.id === id);
+            if (a) exportIcsSingle(a);
+          });
+        });
+        elRemindersList.querySelectorAll("[data-rempdf]").forEach(b => {
+          b.addEventListener("click", () => {
+            const id = b.getAttribute("data-rempdf");
+            const a = apps.find(x => x.id === id);
+            if (a) exportPdfSingle(a);
+          });
+        });
+
+        lucide.createIcons();
+      }
+
+      // Render table
+      function render() {
+        lucide.createIcons();
+
+        const list = getFilteredApps();
+        elCount.textContent = String(list.length);
+
+        elRows.innerHTML = "";
+
+        if (!apps.length) elEmpty.classList.remove("hidden");
+        else elEmpty.classList.add("hidden");
+
+        for (const a of list) {
+          const jobUrl = a.job_url ? String(a.job_url) : "";
+          const safeUrl = jobUrl && (jobUrl.startsWith("http://") || jobUrl.startsWith("https://")) ? jobUrl : "";
+
+          const applied = fmtDate(a.applied_at);
+          const next = fmtDate(a.next_action_at);
+
+          elRows.insertAdjacentHTML("beforeend", `
+            <tr class="hover:bg-slate-50/70">
+              <td class="px-5 py-4">
+                <div class="font-semibold text-slate-900">${escapeHtml(a.company)}</div>
+                ${safeUrl
+                  ? `<a class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand-teal hover:underline" href="${escapeHtml(safeUrl)}" target="_blank" rel="noreferrer">
+                       <span>Job link</span><span aria-hidden="true">↗</span>
+                     </a>`
+                  : `<div class="mt-1 text-xs text-slate-500">${escapeHtml(a.location || "")}</div>`
+                }
+              </td>
+
+              <td class="px-5 py-4 text-slate-700">${escapeHtml(a.position)}</td>
+
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-2">
+                  ${statusPill(a.status)}
+                  <select data-action="status" data-id="${escapeHtml(a.id)}"
+                    class="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+                    <option value="applied" ${a.status==="applied"?"selected":""}>Applied</option>
+                    <option value="screening" ${a.status==="screening"?"selected":""}>Screening</option>
+                    <option value="interview" ${a.status==="interview"?"selected":""}>Interview</option>
+                    <option value="offer" ${a.status==="offer"?"selected":""}>Offer</option>
+                    <option value="rejected" ${a.status==="rejected"?"selected":""}>Rejected</option>
+                    <option value="withdrawn" ${a.status==="withdrawn"?"selected":""}>Withdrawn</option>
+                  </select>
+                </div>
+              </td>
+
+              <td class="px-5 py-4 text-slate-700">${escapeHtml(applied) || "—"}</td>
+
+              <td class="px-5 py-4">
+                ${next
+                  ? `<div class="inline-flex items-center gap-2 rounded-full bg-brand-gold/18 px-2.5 py-1 text-xs font-semibold text-slate-900 ring-1 ring-brand-gold/30">
+                       <span>${escapeHtml(next)}</span>
+                     </div>`
+                  : `<span class="text-xs text-slate-500">—</span>`
+                }
+              </td>
+
+              <td class="px-5 py-4">
+                <div class="flex items-center justify-end gap-2">
+                  <button data-action="edit" data-id="${escapeHtml(a.id)}"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    <i data-lucide="pencil" class="h-4 w-4 text-slate-600"></i>
+                    <span>Edit</span>
+                  </button>
+
+                  <button data-action="pdf" data-id="${escapeHtml(a.id)}"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    <i data-lucide="file-text" class="h-4 w-4 text-brand-gold"></i>
+                    <span>PDF</span>
+                  </button>
+
+                  <button data-action="ics" data-id="${escapeHtml(a.id)}"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
+                    <span>.ics</span>
+                  </button>
+
+                  <button data-action="delete" data-id="${escapeHtml(a.id)}"
+                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    <i data-lucide="trash-2" class="h-4 w-4 text-brand-coral"></i>
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `);
+        }
+
+        // Wire actions
+        elRows.querySelectorAll('select[data-action="status"]').forEach(sel => {
+          sel.addEventListener("change", async () => {
+            const id = sel.getAttribute("data-id");
+            const value = sel.value;
+            await updateApp(id, { status: value }, { toastMsg: `Status: ${value}` });
+            render();
+          });
+        });
+
+        elRows.querySelectorAll("button[data-action]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-id");
+            const action = btn.getAttribute("data-action");
+            const a = apps.find(x => x.id === id);
+            if (!a) return;
+
+            if (action === "edit") openModalForEdit(a);
+            if (action === "delete") await deleteApp(id);
+            if (action === "pdf") exportPdfSingle(a);
+            if (action === "ics") exportIcsSingle(a);
+          });
+        });
+
+        renderReminders();
+        lucide.createIcons();
+      }
+
+      // Export menu wiring
+      btnExport.addEventListener("click", (e) => {
+        e.stopPropagation();
+        exportMenu.classList.toggle("hidden");
+      });
+      document.addEventListener("click", () => exportMenu.classList.add("hidden"));
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") exportMenu.classList.add("hidden");
+      });
+
+      btnExportPdfCurrent.addEventListener("click", () => {
+        exportMenu.classList.add("hidden");
+        exportPdfCurrentView();
+      });
+      btnExportIcsAll.addEventListener("click", () => {
+        exportMenu.classList.add("hidden");
+        exportIcsAllUpcoming();
+      });
+      btnExportIcsPanel.addEventListener("click", exportIcsAllUpcoming);
+
+      // Filters
+      function onFilterChange() { render(); }
+      elQ.addEventListener("input", onFilterChange);
+      elStatusFilter.addEventListener("change", onFilterChange);
+      elSortBy.addEventListener("change", onFilterChange);
+      elOnlyRem.addEventListener("change", onFilterChange);
+
+      // Buttons
+      btnAdd.addEventListener("click", openModalForAdd);
+      if (btnAddEmpty) btnAddEmpty.addEventListener("click", openModalForAdd);
+
+      btnSignOut.addEventListener("click", async () => {
+        await sb.auth.signOut();
+        location.href = "./login.html";
+      });
+
+      // Init
+      (async () => {
+        const s = await requireSession();
+        if (!s) return;
+        await fetchApps();
+        window.addEventListener("focus", () => fetchApps());
+      })();
+    })();
+  </script>
+</body>
+</html>
