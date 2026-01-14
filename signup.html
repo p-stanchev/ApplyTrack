@@ -4,28 +4,66 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ApplyTrack — Sign up</title>
+  <meta name="description" content="Create an ApplyTrack account to track applications, interviews, and deadlines." />
+  <meta name="color-scheme" content="light dark" />
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="shortcut icon" href="/favicon.ico">
 
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="/favicon.ico">
 </head>
 
-<body class="bg-white text-slate-900">
-  <main class="mx-auto max-w-md px-6 py-20">
-    <div class="rounded-3xl bg-white p-8 shadow-xl ring-1 ring-black/5">
-      <h1 class="text-3xl font-semibold">Create your account</h1>
-      <p class="mt-2 text-sm text-slate-600">
-        Track applications, interviews, and deadlines.
-      </p>
+<body class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
+  <noscript>
+    <div class="mx-auto max-w-md p-6">
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+        JavaScript is required to sign up.
+      </div>
+    </div>
+  </noscript>
+
+  <main class="mx-auto flex min-h-screen max-w-md items-center px-6 py-16">
+    <section class="w-full rounded-3xl bg-white p-8 shadow-xl ring-1 ring-black/5">
+      <header>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <!-- Logo: uses favicon; falls back to AT -->
+            <div class="relative grid h-10 w-10 place-items-center overflow-hidden rounded-2xl bg-teal-600 text-white shadow-sm ring-1 ring-black/5">
+              <img
+                src="/favicon.ico"
+                alt="ApplyTrack logo"
+                class="absolute inset-0 h-full w-full object-cover"
+                onerror="this.remove(); document.getElementById('logoFallback').classList.remove('hidden');"
+              />
+              <span id="logoFallback" class="hidden text-sm font-bold">AT</span>
+            </div>
+
+            <div>
+              <h1 class="text-2xl font-semibold leading-tight">Create your account</h1>
+              <p class="mt-0.5 text-sm text-slate-600">Track applications, interviews, and deadlines.</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Status / errors -->
+      <div id="alert"
+           class="mt-6 hidden rounded-2xl border px-4 py-3 text-sm"
+           role="status"
+           aria-live="polite"></div>
 
       <!-- Google signup -->
-      <button id="googleBtn"
-        class="mt-6 w-full inline-flex items-center justify-center gap-3 rounded-xl border px-4 py-3 text-sm font-semibold hover:bg-slate-50">
-        <svg width="18" height="18" viewBox="0 0 48 48">
-          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.1 29.2 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.4 1.1 7.3 2.9l5.7-5.7C33.6 7.1 28.9 5 24 5 12.9 5 4 13.9 4 25s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.5-.4-3.5z"/>
+      <button id="googleBtn" type="button"
+        class="mt-6 w-full inline-flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-teal-100 disabled:cursor-not-allowed disabled:opacity-60">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.18 3.62l6.2-6.2C35.6 3.46 30.2 1.5 24 1.5 14.68 1.5 6.62 6.84 2.74 14.64l7.2 5.6C11.6 14.18 17.34 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24c0-1.6-.14-2.78-.44-4H24v8.02h12.8c-.26 2.05-1.66 5.14-4.78 7.2l7.33 5.67C43.9 36.7 46.5 30.98 46.5 24z"/>
+          <path fill="#FBBC05" d="M9.94 28.24A14.8 14.8 0 0 1 9.1 24c0-1.48.26-2.92.8-4.24l-7.2-5.6A23.2 23.2 0 0 0 1.5 24c0 3.74.9 7.28 2.5 10.42l7.2-6.18z"/>
+          <path fill="#34A853" d="M24 46.5c6.2 0 11.4-2.04 15.2-5.56l-7.33-5.67c-1.96 1.37-4.58 2.33-7.87 2.33-6.66 0-12.3-4.68-14.04-10.98l-7.2 6.18C6.62 41.16 14.68 46.5 24 46.5z"/>
         </svg>
-        Continue with Google
+
+        <span id="googleText">Continue with Google</span>
+        <span id="googleSpinner" class="hidden h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" aria-hidden="true"></span>
       </button>
 
       <div class="my-6 flex items-center gap-3">
@@ -35,23 +73,200 @@
       </div>
 
       <!-- Email signup -->
-      <form id="signupForm" class="grid gap-4">
-        <input id="email" type="email" placeholder="Email"
-               class="rounded-xl border px-4 py-3" required />
-        <input id="password" type="password" placeholder="Password"
-               class="rounded-xl border px-4 py-3" required />
+      <form id="signupForm" class="grid gap-4" novalidate>
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-slate-700" for="email">Email</label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required
+            placeholder="you@example.com"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-teal-400 focus:ring-4 focus:ring-teal-100" />
+        </div>
 
-        <button class="rounded-xl bg-teal-600 px-4 py-3 font-semibold text-white hover:bg-teal-700">
-          Sign up with email
+        <div class="grid gap-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium text-slate-700" for="password">Password</label>
+            <button id="togglePw" type="button"
+              class="text-xs font-semibold text-slate-600 hover:text-slate-900">
+              Show
+            </button>
+          </div>
+
+          <input id="password" name="password" type="password" autocomplete="new-password" required
+            placeholder="Create a password"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-teal-400 focus:ring-4 focus:ring-teal-100" />
+
+          <p class="text-xs text-slate-500">
+            Use at least 8 characters. Avoid reusing passwords.
+          </p>
+        </div>
+
+        <!-- Consent -->
+        <label class="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          <input id="agree" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-100" required />
+          <span>
+            I agree to the
+            <button id="openTermsInline" type="button" class="font-semibold underline hover:text-slate-900">Terms</button>
+            as described.
+          </span>
+        </label>
+
+        <button id="emailBtn" type="submit"
+          class="mt-1 inline-flex w-full items-center justify-center gap-3 rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100 disabled:cursor-not-allowed disabled:opacity-60">
+          <span id="emailText">Sign up with email</span>
+          <span id="emailSpinner" class="hidden h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true"></span>
         </button>
       </form>
 
-      <p class="mt-4 text-center text-sm">
+      <p class="mt-6 text-center text-xs text-slate-500">
+        By continuing, you agree to the
+        <button id="openTerms" type="button" class="font-semibold underline hover:text-slate-700">Terms</button>.
+      </p>
+
+      <p class="mt-3 text-center text-sm">
         Already have an account?
         <a href="./login.html" class="font-semibold underline">Log in</a>
       </p>
-    </div>
+    </section>
   </main>
+
+  <!-- Terms Modal -->
+  <div id="termsModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+    <div id="termsBackdrop" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+
+    <div class="relative mx-auto flex min-h-screen max-w-2xl items-center px-6 py-10">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="termsTitle"
+        class="w-full overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-black/10"
+      >
+        <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
+          <div>
+            <h2 id="termsTitle" class="text-lg font-semibold">ApplyTrack Terms of Service</h2>
+            <p class="mt-1 text-xs text-slate-500">
+              Effective date: <span id="termsDate"></span>
+            </p>
+          </div>
+
+          <button id="closeTermsX" type="button"
+            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-teal-100">
+            Close
+          </button>
+        </div>
+
+        <div class="max-h-[70vh] overflow-auto px-6 py-5 text-sm text-slate-700">
+          <div class="space-y-5 leading-relaxed">
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">1) Acceptance</h3>
+              <p class="mt-1">
+                By creating an account, logging in, or otherwise using ApplyTrack, you agree to these Terms.
+                If you do not agree, do not use the Service.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">2) The Service</h3>
+              <p class="mt-1">
+                ApplyTrack helps you track job applications. Features may change over time, and we may add, modify,
+                or remove functionality.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">3) Accounts & Security</h3>
+              <ul class="mt-1 list-disc pl-5 space-y-1">
+                <li>You are responsible for activity under your account.</li>
+                <li>Do not share passwords or bypass authentication.</li>
+                <li>Notify us if you suspect unauthorized access.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">4) Your Content</h3>
+              <p class="mt-1">
+                You may store job application information (e.g., company names, notes, links). You retain ownership of your content.
+                You grant us a limited license to host and process it to operate and improve the Service.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">5) Data, Analytics, and Commercial Use</h3>
+              <p class="mt-1">
+                We may collect and use usage data to operate, maintain, and improve ApplyTrack (for example: performance metrics,
+                feature usage, error logs, and diagnostics).
+              </p>
+              <p class="mt-2">
+                By creating an account and using ApplyTrack, you agree that we may use aggregated and/or de-identified data for
+                analytics and commercial purposes (including reporting, product optimization, marketing insights, and monetization decisions).
+              </p>
+              <p class="mt-2">
+                We do not intend to sell your personal job-application content (such as your notes) in identifiable form without your explicit consent.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">6) Third-Party Services</h3>
+              <p class="mt-1">
+                Authentication and infrastructure may be provided by third parties (for example: Supabase, Google OAuth).
+                Their terms and policies may apply to parts of the Service.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">7) Acceptable Use</h3>
+              <ul class="mt-1 list-disc pl-5 space-y-1">
+                <li>No unlawful, harmful, or abusive behavior.</li>
+                <li>No attempts to disrupt, probe, or reverse engineer the Service.</li>
+                <li>No uploading malware or accessing other users’ data without permission.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">8) Availability & Changes</h3>
+              <p class="mt-1">
+                The Service is provided “as is” and may occasionally be unavailable. We may update these Terms; continued use after changes
+                means you accept the updated Terms.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">9) Termination</h3>
+              <p class="mt-1">
+                You may stop using the Service anytime. We may suspend or terminate access if we reasonably believe you violated these Terms
+                or to protect the Service and users.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">10) Limitation of Liability</h3>
+              <p class="mt-1">
+                To the maximum extent permitted by law, we are not liable for indirect, incidental, special, consequential, or punitive damages,
+                or any loss of data, profits, or business opportunities.
+              </p>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">11) Contact</h3>
+              <p class="mt-1">
+                For questions about these Terms, contact:
+                <span class="font-semibold">support@stanchev.dev</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-5">
+          <button id="closeTerms" type="button"
+            class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-teal-100">
+            Close
+          </button>
+          <button id="agreeTerms" type="button"
+            class="rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-100">
+            I understand
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -60,29 +275,153 @@
       "sb_publishable_-IIYfsqYnZQFzrkiAFBkzQ_zPWnzp4m"
     );
 
+    const alertBox = document.getElementById("alert");
+    const googleBtn = document.getElementById("googleBtn");
+    const googleText = document.getElementById("googleText");
+    const googleSpinner = document.getElementById("googleSpinner");
+
+    const emailBtn = document.getElementById("emailBtn");
+    const emailText = document.getElementById("emailText");
+    const emailSpinner = document.getElementById("emailSpinner");
+
+    const emailEl = document.getElementById("email");
+    const pwEl = document.getElementById("password");
+    const agreeEl = document.getElementById("agree");
+    const togglePw = document.getElementById("togglePw");
+
+    const redirectUrl = new URL("/app.html", location.origin).href;
+
+    function showAlert(message, type = "error") {
+      alertBox.classList.remove("hidden");
+      alertBox.textContent = message;
+
+      if (type === "success") {
+        alertBox.className = "mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800";
+      } else {
+        alertBox.className = "mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800";
+      }
+    }
+
+    function clearAlert() {
+      alertBox.classList.add("hidden");
+      alertBox.textContent = "";
+    }
+
+    function setLoading(which, loading) {
+      if (which === "google") {
+        googleBtn.disabled = loading;
+        googleSpinner.classList.toggle("hidden", !loading);
+        googleText.textContent = loading ? "Redirecting…" : "Continue with Google";
+      }
+      if (which === "email") {
+        emailBtn.disabled = loading;
+        emailSpinner.classList.toggle("hidden", !loading);
+        emailText.textContent = loading ? "Creating account…" : "Sign up with email";
+        emailEl.disabled = loading;
+        pwEl.disabled = loading;
+        agreeEl.disabled = loading;
+        togglePw.disabled = loading;
+      }
+    }
+
     // Google signup
-    document.getElementById("googleBtn").onclick = async () => {
-      await sb.auth.signInWithOAuth({
+    googleBtn.onclick = async () => {
+      clearAlert();
+      setLoading("google", true);
+      const { error } = await sb.auth.signInWithOAuth({
         provider: "google",
-        options: {
-          redirectTo: location.origin + "/app.html"
-        }
+        options: { redirectTo: redirectUrl }
       });
+      if (error) {
+        setLoading("google", false);
+        showAlert(error.message);
+      }
     };
 
     // Email signup
     document.getElementById("signupForm").onsubmit = async (e) => {
       e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      clearAlert();
 
-      const { error } = await sb.auth.signUp({ email, password });
+      const email = emailEl.value.trim();
+      const password = pwEl.value;
+
+      if (!agreeEl.checked) {
+        showAlert("Please agree to the Terms to continue.");
+        return;
+      }
+
+      if (!email || !password) {
+        showAlert("Please enter your email and a password.");
+        return;
+      }
+
+      setLoading("email", true);
+      const { error } = await sb.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+
+      setLoading("email", false);
+
       if (error) {
-        alert(error.message);
+        showAlert(error.message);
       } else {
-        alert("Check your email to confirm your account.");
+        showAlert("Check your email to confirm your account.", "success");
       }
     };
+
+    // Show / hide password
+    togglePw.onclick = () => {
+      const isPw = pwEl.type === "password";
+      pwEl.type = isPw ? "text" : "password";
+      togglePw.textContent = isPw ? "Hide" : "Show";
+    };
+
+    // Terms modal
+    const termsModal = document.getElementById("termsModal");
+    const openTerms = document.getElementById("openTerms");
+    const openTermsInline = document.getElementById("openTermsInline");
+    const closeTerms = document.getElementById("closeTerms");
+    const closeTermsX = document.getElementById("closeTermsX");
+    const agreeTerms = document.getElementById("agreeTerms");
+    const termsBackdrop = document.getElementById("termsBackdrop");
+
+    document.getElementById("termsDate").textContent = new Date().toLocaleDateString(undefined, {
+      year: "numeric", month: "long", day: "numeric"
+    });
+
+    let lastFocusEl = null;
+
+    function openTermsModal() {
+      lastFocusEl = document.activeElement;
+      termsModal.classList.remove("hidden");
+      termsModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("overflow-hidden");
+      (closeTermsX || closeTerms).focus();
+    }
+
+    function closeTermsModal() {
+      termsModal.classList.add("hidden");
+      termsModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("overflow-hidden");
+      if (lastFocusEl && typeof lastFocusEl.focus === "function") lastFocusEl.focus();
+    }
+
+    openTerms?.addEventListener("click", openTermsModal);
+    openTermsInline?.addEventListener("click", openTermsModal);
+    closeTerms?.addEventListener("click", closeTermsModal);
+    closeTermsX?.addEventListener("click", closeTermsModal);
+    agreeTerms?.addEventListener("click", closeTermsModal);
+    termsBackdrop?.addEventListener("click", closeTermsModal);
+
+    document.addEventListener("keydown", (e) => {
+      if (termsModal.classList.contains("hidden")) return;
+      if (e.key === "Escape") closeTermsModal();
+    });
   </script>
 </body>
 </html>
