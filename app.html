@@ -44,9 +44,9 @@
 
     body.modal-open { overflow: hidden; }
   </style>
-  <link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="shortcut icon" href="/favicon.ico">
 
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="/favicon.ico">
 </head>
 
 <body class="bg-white text-slate-900">
@@ -244,7 +244,7 @@
   </main>
 
   <!-- Toast -->
-  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2">
+  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2" aria-live="polite">
     <div class="rounded-2xl bg-slate-900 px-4 py-3 text-sm text-white shadow-soft2">
       <span id="toastText"></span>
     </div>
@@ -255,7 +255,7 @@
     <div id="modalBackdrop" class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"></div>
 
     <div class="relative mx-auto mt-10 w-[94%] max-w-2xl sm:mt-16">
-      <div class="grain rounded-[2rem] bg-white/92 p-6 shadow-soft2 ring-1 ring-black/10 sm:p-8">
+      <div class="grain rounded-[2rem] bg-white/92 p-6 shadow-soft2 ring-1 ring-black/10 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="flex items-start justify-between gap-4">
           <div>
             <div id="modalTitle" class="text-lg font-semibold tracking-tight">Add application</div>
@@ -269,18 +269,18 @@
         <form id="form" class="mt-6 grid gap-4">
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-xs font-semibold text-slate-700">Company *</label>
+              <label class="text-xs font-semibold text-slate-700" for="fCompany">Company *</label>
               <input id="fCompany" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Company" required />
             </div>
             <div>
-              <label class="text-xs font-semibold text-slate-700">Position *</label>
+              <label class="text-xs font-semibold text-slate-700" for="fPosition">Position *</label>
               <input id="fPosition" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Position" required />
             </div>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
-              <label class="text-xs font-semibold text-slate-700">Status *</label>
+              <label class="text-xs font-semibold text-slate-700" for="fStatus">Status *</label>
               <select id="fStatus" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
                 <option value="applied">Applied</option>
                 <option value="screening">Screening</option>
@@ -292,29 +292,29 @@
             </div>
 
             <div>
-              <label class="text-xs font-semibold text-slate-700">Applied date</label>
+              <label class="text-xs font-semibold text-slate-700" for="fApplied">Applied date</label>
               <input id="fApplied" type="date" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" />
             </div>
 
             <div>
-              <label class="text-xs font-semibold text-slate-700">Next action</label>
+              <label class="text-xs font-semibold text-slate-700" for="fNext">Next action</label>
               <input id="fNext" type="date" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" />
             </div>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-xs font-semibold text-slate-700">Location</label>
+              <label class="text-xs font-semibold text-slate-700" for="fLocation">Location</label>
               <input id="fLocation" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Vienna / Remote / Hybrid" />
             </div>
             <div>
-              <label class="text-xs font-semibold text-slate-700">Job URL</label>
+              <label class="text-xs font-semibold text-slate-700" for="fUrl">Job URL</label>
               <input id="fUrl" type="url" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="https://…" />
             </div>
           </div>
 
           <div>
-            <label class="text-xs font-semibold text-slate-700">Notes</label>
+            <label class="text-xs font-semibold text-slate-700" for="fNotes">Notes</label>
             <textarea id="fNotes" rows="4" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="What happened? Next steps?"></textarea>
           </div>
 
@@ -478,9 +478,26 @@
         return String(s || "export").replace(/[^\w\-]+/g, "_").slice(0, 80);
       }
 
+      // --- ICS helpers (better correctness + escaping) ---
+      function icsEscape(s) {
+        return String(s ?? "")
+          .replace(/\\/g, "\\\\")
+          .replace(/\n/g, "\\n")
+          .replace(/,/g, "\\,")
+          .replace(/;/g, "\\;");
+      }
       function toIcsDate(dateStr) {
         const [y, m, d] = String(dateStr).split("-");
         return `${y}${m}${d}`;
+      }
+      function toIcsDatePlus1(dateStr) {
+        const [y, m, d] = String(dateStr).split("-").map(Number);
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() + 1);
+        const yy = dt.getFullYear();
+        const mm = String(dt.getMonth() + 1).padStart(2, "0");
+        const dd = String(dt.getDate()).padStart(2, "0");
+        return `${yy}${mm}${dd}`;
       }
 
       function downloadBlob(filename, mime, content) {
@@ -495,10 +512,36 @@
         setTimeout(() => URL.revokeObjectURL(url), 1200);
       }
 
+      // Debounce (smoother search)
+      function debounce(fn, ms = 150) {
+        let t = null;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+      }
+
       // State
       let session = null;
       let apps = [];
       let editingId = null;
+
+      // Realtime
+      let rt = null;
+      function startRealtime() {
+        try {
+          if (rt) sb.removeChannel(rt);
+        } catch (_) {}
+
+        if (!session?.user?.id) return;
+
+        rt = sb
+          .channel("applications-rt")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "applications",
+            filter: `user_id=eq.${session.user.id}`,
+          }, () => fetchApps())
+          .subscribe();
+      }
 
       // Auth: handle PKCE `code` param and remove it from URL
       async function handleOAuthCodeIfPresent() {
@@ -523,6 +566,7 @@
         }
         session = data.session;
         elUserEmail.textContent = session.user.email || session.user.user_metadata?.email || "Unknown";
+        startRealtime();
         return session;
       }
 
@@ -533,14 +577,18 @@
         }
         session = s;
         elUserEmail.textContent = session.user.email || session.user.user_metadata?.email || "Unknown";
+        startRealtime();
       });
 
-      // Data fetch
+      // Data fetch (IMPORTANT: per-user filter)
       async function fetchApps() {
+        if (!session?.user?.id) return;
+
         setLoading(true);
         const { data, error } = await sb
           .from("applications")
           .select("*")
+          .eq("user_id", session.user.id)
           .order("created_at", { ascending: false });
         setLoading(false);
 
@@ -644,23 +692,34 @@
       function showModalError(msg) {
         modalErrorText.textContent = msg;
         modalError.classList.remove("hidden");
-        lucide.createIcons();
       }
       function clearModalError() {
         modalError.classList.add("hidden");
         modalErrorText.textContent = "";
       }
 
+      let lastFocusEl = null;
+
       function openModal() {
         clearModalError();
+        lastFocusEl = document.activeElement;
+
         modal.classList.remove("hidden");
         document.body.classList.add("modal-open");
+
+        // focus first input
+        setTimeout(() => fCompany.focus(), 0);
+
         lucide.createIcons();
       }
       function closeModal() {
         modal.classList.add("hidden");
         document.body.classList.remove("modal-open");
         editingId = null;
+
+        if (lastFocusEl && typeof lastFocusEl.focus === "function") {
+          setTimeout(() => lastFocusEl.focus(), 0);
+        }
       }
 
       function resetForm() {
@@ -684,7 +743,6 @@
         btnPdfInModal.classList.add("hidden");
 
         openModal();
-        fCompany.focus();
       }
 
       function openModalForEdit(a) {
@@ -706,7 +764,6 @@
         else btnIcsInModal.classList.add("hidden");
 
         openModal();
-        fCompany.focus();
       }
 
       modalBackdrop.addEventListener("click", closeModal);
@@ -747,14 +804,30 @@
           return;
         }
 
+        // Basic date sanity
+        const appliedVal = fApplied.value || null;
+        const nextVal = fNext.value || null;
+        if (appliedVal && nextVal) {
+          const aD = new Date(appliedVal + "T00:00:00");
+          const nD = new Date(nextVal + "T00:00:00");
+          if (nD < aD) {
+            showModalError("Next action can’t be before applied date.");
+            return;
+          }
+        }
+
+        // URL normalize
+        let jobUrl = (fUrl.value || "").trim();
+        if (jobUrl && !/^https?:\/\//i.test(jobUrl)) jobUrl = "https://" + jobUrl;
+
         const payload = {
           company,
           position,
           status,
-          applied_at: fApplied.value || null,
-          next_action_at: fNext.value || null,
+          applied_at: appliedVal,
+          next_action_at: nextVal,
           location: fLocation.value.trim() || null,
-          job_url: fUrl.value.trim() || null,
+          job_url: jobUrl || null,
           notes: fNotes.value.trim() || null,
         };
 
@@ -858,7 +931,8 @@
       function exportIcsSingle(a) {
         if (!a.next_action_at) return showToast("No next action date set.");
 
-        const dt = toIcsDate(a.next_action_at);
+        const dtStart = toIcsDate(a.next_action_at);
+        const dtEnd = toIcsDatePlus1(a.next_action_at); // exclusive end (correct all-day)
         const uid = `${a.id}@applytrack`;
         const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
 
@@ -869,7 +943,7 @@
           `Status: ${a.status || ""}`,
           a.job_url ? `Job URL: ${a.job_url}` : "",
           a.notes ? `Notes: ${a.notes}` : ""
-        ].filter(Boolean).join("\\n");
+        ].filter(Boolean).join("\n");
 
         const ics =
 `BEGIN:VCALENDAR
@@ -878,12 +952,12 @@ PRODID:-//ApplyTrack//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:${uid}
-DTSTAMP:${stamp}
-DTSTART;VALUE=DATE:${dt}
-DTEND;VALUE=DATE:${dt}
-SUMMARY:${summary.replace(/\n/g," ")}
-DESCRIPTION:${desc.replace(/\n/g,"\\n")}
+UID:${icsEscape(uid)}
+DTSTAMP:${icsEscape(stamp)}
+DTSTART;VALUE=DATE:${icsEscape(dtStart)}
+DTEND;VALUE=DATE:${icsEscape(dtEnd)}
+SUMMARY:${icsEscape(summary)}
+DESCRIPTION:${icsEscape(desc)}
 END:VEVENT
 END:VCALENDAR
 `;
@@ -907,7 +981,8 @@ END:VCALENDAR
         const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
 
         const events = list.map(a => {
-          const dt = toIcsDate(a.next_action_at);
+          const dtStart = toIcsDate(a.next_action_at);
+          const dtEnd = toIcsDatePlus1(a.next_action_at);
           const uid = `${a.id}@applytrack`;
           const summary = `ApplyTrack: Follow up — ${a.company} (${a.position})`;
           const desc = [
@@ -916,15 +991,15 @@ END:VCALENDAR
             `Status: ${a.status || ""}`,
             a.job_url ? `Job URL: ${a.job_url}` : "",
             a.notes ? `Notes: ${a.notes}` : ""
-          ].filter(Boolean).join("\\n");
+          ].filter(Boolean).join("\n");
 
           return `BEGIN:VEVENT
-UID:${uid}
-DTSTAMP:${stamp}
-DTSTART;VALUE=DATE:${dt}
-DTEND;VALUE=DATE:${dt}
-SUMMARY:${summary.replace(/\n/g," ")}
-DESCRIPTION:${desc.replace(/\n/g,"\\n")}
+UID:${icsEscape(uid)}
+DTSTAMP:${icsEscape(stamp)}
+DTSTART;VALUE=DATE:${icsEscape(dtStart)}
+DTEND;VALUE=DATE:${icsEscape(dtEnd)}
+SUMMARY:${icsEscape(summary)}
+DESCRIPTION:${icsEscape(desc)}
 END:VEVENT`;
         }).join("\n");
 
@@ -1036,8 +1111,6 @@ END:VCALENDAR
 
       // Render table
       function render() {
-        lucide.createIcons();
-
         const list = getFilteredApps();
         elCount.textContent = String(list.length);
 
@@ -1057,12 +1130,19 @@ END:VCALENDAR
             <tr class="hover:bg-slate-50/70">
               <td class="px-5 py-4">
                 <div class="font-semibold text-slate-900">${escapeHtml(a.company)}</div>
-                ${safeUrl
-                  ? `<a class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand-teal hover:underline" href="${escapeHtml(safeUrl)}" target="_blank" rel="noreferrer">
-                       <span>Job link</span><span aria-hidden="true">↗</span>
-                     </a>`
-                  : `<div class="mt-1 text-xs text-slate-500">${escapeHtml(a.location || "")}</div>`
-                }
+
+                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  ${safeUrl
+                    ? `<a class="inline-flex items-center gap-1 text-xs font-semibold text-brand-teal hover:underline" href="${escapeHtml(safeUrl)}" target="_blank" rel="noreferrer">
+                         <span>Job link</span><span aria-hidden="true">↗</span>
+                       </a>`
+                    : ``
+                  }
+                  ${a.location
+                    ? `<div class="text-xs text-slate-500">${escapeHtml(a.location)}</div>`
+                    : ``
+                  }
+                </div>
               </td>
 
               <td class="px-5 py-4 text-slate-700">${escapeHtml(a.position)}</td>
@@ -1173,8 +1253,8 @@ END:VCALENDAR
       btnExportIcsPanel.addEventListener("click", exportIcsAllUpcoming);
 
       // Filters
-      function onFilterChange() { render(); }
-      elQ.addEventListener("input", onFilterChange);
+      const onFilterChange = () => render();
+      elQ.addEventListener("input", debounce(onFilterChange, 150));
       elStatusFilter.addEventListener("change", onFilterChange);
       elSortBy.addEventListener("change", onFilterChange);
       elOnlyRem.addEventListener("change", onFilterChange);
