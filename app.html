@@ -43,6 +43,11 @@
     .grain > *{ position: relative; z-index: 1; }
 
     body.modal-open { overflow: hidden; }
+
+    @media (max-width: 360px){
+      .kpiBtn { padding: 10px !important; border-radius: 16px !important; }
+      .kpiNum { font-size: 1.05rem !important; }
+    }
   </style>
 
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -63,18 +68,41 @@
       <div class="rounded-[1.75rem] bg-gradient-to-r from-brand-teal/35 via-brand-gold/25 to-brand-coral/35 p-[1px] shadow-soft2">
         <div class="grain rounded-[1.75rem] bg-white/80 backdrop-blur-xl ring-1 ring-black/5">
           <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-center gap-3">
-              <span class="grid h-11 w-11 place-items-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
-                <i data-lucide="briefcase" class="h-5 w-5 text-brand-teal"></i>
-              </span>
-              <div class="leading-tight">
-                <div class="text-sm font-semibold tracking-tight">ApplyTrack</div>
-                <div class="text-xs text-slate-600">Applications</div>
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
+                  <i data-lucide="briefcase" class="h-5 w-5 text-brand-teal"></i>
+                </span>
+                <div class="leading-tight">
+                  <div class="text-sm font-semibold tracking-tight">ApplyTrack</div>
+                  <div class="text-xs text-slate-600">Applications</div>
+                </div>
+              </div>
+
+              <!-- mobile: compact user pill -->
+              <div class="sm:hidden">
+                <button id="btnUserMenu"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                  <i data-lucide="user" class="h-4 w-4 text-slate-600"></i>
+                  <span class="max-w-[12rem] truncate" id="userEmailMobile">—</span>
+                  <i data-lucide="chevron-down" class="h-4 w-4 text-slate-500"></i>
+                </button>
+
+                <div id="userMenu"
+                  class="hidden absolute right-6 mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-soft2 ring-1 ring-black/10">
+                  <div class="px-4 py-3 text-sm text-slate-700">
+                    Signed in as<br>
+                    <span id="userEmailMenu" class="font-semibold text-slate-900">—</span>
+                  </div>
+                  <button id="btnSignOutMobile" class="w-full px-4 py-3 text-left text-sm hover:bg-slate-50">
+                    Sign out
+                  </button>
+                </div>
               </div>
             </div>
 
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <div class="text-xs text-slate-600">
+              <div class="hidden text-xs text-slate-600 sm:block">
                 Signed in as <span id="userEmail" class="font-semibold text-slate-900">—</span>
               </div>
 
@@ -82,30 +110,30 @@
                 <button id="btnAdd"
                   class="inline-flex items-center gap-2 rounded-2xl bg-brand-teal px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-brand-teal/90">
                   <i data-lucide="plus" class="h-4 w-4"></i>
-                  <span>Add</span>
+                  <span class="hidden sm:inline">Add</span>
                 </button>
 
                 <div class="relative">
                   <button id="btnExport"
                     class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
                     <i data-lucide="download" class="h-4 w-4 text-brand-coral"></i>
-                    <span>Export</span>
+                    <span class="hidden sm:inline">Export</span>
                     <i data-lucide="chevron-down" class="h-4 w-4 text-slate-600"></i>
                   </button>
 
                   <div id="exportMenu"
-                    class="hidden absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl bg-white shadow-soft2 ring-1 ring-black/10">
+                    class="hidden absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl bg-white shadow-soft2 ring-1 ring-black/10">
                     <button id="btnExportPdfCurrent" class="w-full px-4 py-3 text-left text-sm hover:bg-slate-50">
                       Export current view as PDF
                     </button>
-                    <button id="btnExportIcsAll" class="w-full px-4 py-3 text-left text-sm hover:bg-slate-50">
-                      Export upcoming reminders as .ics
+                    <button id="btnExportCalendarAll" class="w-full px-4 py-3 text-left text-sm hover:bg-slate-50">
+                      Add upcoming reminders to Calendar
                     </button>
                   </div>
                 </div>
 
                 <button id="btnSignOut"
-                  class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                  class="hidden sm:inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
                   <i data-lucide="log-out" class="h-4 w-4 text-slate-600"></i>
                   <span>Sign out</span>
                 </button>
@@ -118,21 +146,90 @@
     </div>
   </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <!-- Controls -->
-    <section class="mb-4 grid gap-3 lg:grid-cols-12">
+  <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+    <!-- KPI strip (compact on mobile) -->
+    <section class="mb-4 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+      <button data-kpi="all"
+        class="kpiBtn rounded-2xl bg-white/90 p-3 sm:p-4 text-left shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold text-slate-600 sm:text-xs">Total</div>
+          <i data-lucide="layers" class="h-4 w-4 text-slate-500"></i>
+        </div>
+        <div id="kpiTotal" class="kpiNum mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl">0</div>
+      </button>
+
+      <button data-kpi="active"
+        class="kpiBtn rounded-2xl bg-white/90 p-3 sm:p-4 text-left shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold text-slate-600 sm:text-xs">Active</div>
+          <i data-lucide="sparkles" class="h-4 w-4 text-brand-teal"></i>
+        </div>
+        <div id="kpiActive" class="kpiNum mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl">0</div>
+      </button>
+
+      <button data-kpi="overdue"
+        class="kpiBtn rounded-2xl bg-white/90 p-3 sm:p-4 text-left shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold text-slate-600 sm:text-xs">Overdue</div>
+          <i data-lucide="triangle-alert" class="h-4 w-4 text-brand-coral"></i>
+        </div>
+        <div id="kpiOverdue" class="kpiNum mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl">0</div>
+      </button>
+
+      <button data-kpi="next7"
+        class="kpiBtn rounded-2xl bg-white/90 p-3 sm:p-4 text-left shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold text-slate-600 sm:text-xs">Next 7 days</div>
+          <i data-lucide="calendar-clock" class="h-4 w-4 text-brand-gold"></i>
+        </div>
+        <div id="kpiNext7" class="kpiNum mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl">0</div>
+      </button>
+
+      <button data-kpi="interviews"
+        class="kpiBtn rounded-2xl bg-white/90 p-3 sm:p-4 text-left shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold text-slate-600 sm:text-xs">Interviews</div>
+          <i data-lucide="messages-square" class="h-4 w-4 text-slate-600"></i>
+        </div>
+        <div id="kpiInterviews" class="kpiNum mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl">0</div>
+      </button>
+
+      <button data-kpi="offers"
+        class="kpiBtn rounded-2xl bg-white/90 p-3 sm:p-4 text-left shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-semibold text-slate-600 sm:text-xs">Offers</div>
+          <i data-lucide="badge-check" class="h-4 w-4 text-brand-teal"></i>
+        </div>
+        <div id="kpiOffers" class="kpiNum mt-1 text-xl font-semibold tracking-tight sm:mt-2 sm:text-2xl">0</div>
+      </button>
+    </section>
+
+    <!-- Controls (mobile-first, aligned) -->
+    <section class="mb-3 grid items-stretch gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-12">
+      <!-- Search -->
       <div class="lg:col-span-5">
-        <div class="flex items-center gap-2 rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
-          <i data-lucide="search" class="h-4 w-4 text-slate-500"></i>
-          <input id="q" type="text" placeholder="Search company, position, notes…"
-            class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
+        <div class="h-full rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <div class="mb-2 flex items-center justify-between">
+            <label for="q" class="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Search</label>
+            <span class="text-[11px] text-slate-500">Press <span class="font-semibold text-slate-700">/</span></span>
+          </div>
+
+          <div class="flex h-10 items-center gap-2 rounded-xl bg-slate-50 px-3 ring-1 ring-black/10 focus-within:ring-2 focus-within:ring-brand-teal">
+            <i data-lucide="search" class="h-4 w-4 text-slate-500"></i>
+            <input id="q" type="text" placeholder="Search company, position, notes…"
+              class="w-full bg-transparent text-sm outline-none placeholder:text-slate-400" />
+          </div>
         </div>
       </div>
 
+      <!-- Status -->
       <div class="lg:col-span-3">
-        <div class="rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
-          <label class="text-xs font-semibold text-slate-700">Status</label>
-          <select id="statusFilter" class="mt-2 w-full rounded-xl bg-slate-50 px-3 py-2 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+        <div class="h-full rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <div class="mb-2 flex items-center justify-between">
+            <label for="statusFilter" class="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Status</label>
+            <i data-lucide="filter" class="h-4 w-4 text-slate-500"></i>
+          </div>
+          <select id="statusFilter" class="h-10 w-full rounded-xl bg-slate-50 px-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
             <option value="all">All</option>
             <option value="applied">Applied</option>
             <option value="screening">Screening</option>
@@ -144,10 +241,14 @@
         </div>
       </div>
 
+      <!-- Sort -->
       <div class="lg:col-span-2">
-        <div class="rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
-          <label class="text-xs font-semibold text-slate-700">Sort</label>
-          <select id="sortBy" class="mt-2 w-full rounded-xl bg-slate-50 px-3 py-2 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+        <div class="h-full rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <div class="mb-2 flex items-center justify-between">
+            <label for="sortBy" class="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Sort</label>
+            <i data-lucide="arrow-up-down" class="h-4 w-4 text-slate-500"></i>
+          </div>
+          <select id="sortBy" class="h-10 w-full rounded-xl bg-slate-50 px-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
             <option value="created_desc">Newest</option>
             <option value="created_asc">Oldest</option>
             <option value="applied_desc">Applied date (newest)</option>
@@ -158,18 +259,59 @@
         </div>
       </div>
 
+      <!-- Reminders -->
       <div class="lg:col-span-2">
-        <div class="rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
-          <label class="text-xs font-semibold text-slate-700">Reminders</label>
-          <label class="mt-2 flex items-center gap-2 text-sm">
-            <input id="onlyWithReminders" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-teal focus:ring-brand-teal" />
-            <span class="text-slate-700">Only with next action</span>
-          </label>
+        <div class="h-full rounded-2xl bg-white/85 px-4 py-3 shadow-soft ring-1 ring-black/5">
+          <div class="mb-2 flex items-center justify-between">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Reminders</div>
+            <i data-lucide="bell" class="h-4 w-4 text-slate-500"></i>
+          </div>
+
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-sm">
+              <input id="onlyWithReminders" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-teal focus:ring-brand-teal" />
+              <span class="text-slate-700">Only with next action</span>
+            </label>
+
+            <select id="remWindow" class="h-10 w-full rounded-xl bg-slate-50 px-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+              <option value="all">All</option>
+              <option value="overdue">Overdue</option>
+              <option value="next7">Next 7 days</option>
+              <option value="next30">Next 30 days</option>
+            </select>
+
+            <label class="flex items-center gap-2 text-sm">
+              <input id="onlyActive" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-teal focus:ring-brand-teal" />
+              <span class="text-slate-700">Active only</span>
+            </label>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Table -->
+    <!-- Utility bar -->
+    <section class="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <div class="inline-flex overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/5">
+          <button id="btnDensityComfy" class="px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-slate-50">Comfy</button>
+          <button id="btnDensityCompact" class="px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-slate-50">Compact</button>
+        </div>
+
+        <button id="btnClearFilters"
+          class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+          <i data-lucide="rotate-ccw" class="h-4 w-4 text-slate-600"></i>
+          <span>Clear filters</span>
+        </button>
+
+        <div class="hidden sm:block text-xs text-slate-500">Shortcuts: <span class="font-semibold text-slate-700">/</span> search, <span class="font-semibold text-slate-700">N</span> add</div>
+      </div>
+
+      <div class="text-xs text-slate-500">
+        Pinned stays on top <span class="hidden sm:inline">(local only)</span>.
+      </div>
+    </section>
+
+    <!-- List container -->
     <section class="overflow-hidden rounded-[1.75rem] bg-white/90 shadow-soft2 ring-1 ring-black/5">
       <div class="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
         <div class="flex items-center gap-2">
@@ -184,8 +326,9 @@
         </div>
       </div>
 
-      <div class="overflow-auto">
-        <table class="min-w-[980px] w-full text-sm">
+      <!-- Desktop table -->
+      <div class="hidden lg:block overflow-auto">
+        <table class="w-full text-sm">
           <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th class="px-5 py-3">Company</th>
@@ -198,6 +341,11 @@
           </thead>
           <tbody id="rows" class="divide-y divide-slate-100"></tbody>
         </table>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="lg:hidden px-4 pb-4">
+        <div id="cards" class="grid gap-3"></div>
       </div>
 
       <div id="emptyState" class="hidden px-6 py-10">
@@ -220,31 +368,35 @@
       </div>
     </section>
 
-    <!-- Reminders -->
+    <!-- Reminders (collapsible on mobile) -->
     <section class="mt-6 rounded-[1.75rem] bg-white/90 p-5 shadow-soft2 ring-1 ring-black/5">
       <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
+        <button id="btnToggleReminders" class="flex items-center gap-2">
           <i data-lucide="calendar-clock" class="h-4 w-4 text-slate-600"></i>
           <div class="text-sm font-semibold">Upcoming reminders</div>
-        </div>
-        <button id="btnExportIcsPanel"
+          <i data-lucide="chevron-down" id="remChevron" class="ml-1 h-4 w-4 text-slate-500 lg:hidden"></i>
+        </button>
+
+        <button id="btnCalendarPanel"
           class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
           <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
-          <span>Download .ics</span>
+          <span>Calendar</span>
         </button>
       </div>
 
-      <div id="remindersMeta" class="mt-2 text-sm text-slate-600">—</div>
-      <div id="remindersList" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+      <div id="remindersBody" class="mt-2">
+        <div id="remindersMeta" class="text-sm text-slate-600">—</div>
+        <div id="remindersList" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
 
-      <div class="mt-4 rounded-2xl bg-slate-50 p-4 text-xs text-slate-600 ring-1 ring-black/5">
-        Calendar notifications are best handled via <span class="font-semibold text-slate-900">.ics</span> files.
+        <div class="mt-4 rounded-2xl bg-slate-50 p-4 text-xs text-slate-600 ring-1 ring-black/5">
+          Google Calendar can be added via event links. Apple Calendar uses an imported calendar file.
+        </div>
       </div>
     </section>
   </main>
 
   <!-- Toast -->
-  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2" aria-live="polite">
+  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2">
     <div class="rounded-2xl bg-slate-900 px-4 py-3 text-sm text-white shadow-soft2">
       <span id="toastText"></span>
     </div>
@@ -255,7 +407,7 @@
     <div id="modalBackdrop" class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"></div>
 
     <div class="relative mx-auto mt-10 w-[94%] max-w-2xl sm:mt-16">
-      <div class="grain rounded-[2rem] bg-white/92 p-6 shadow-soft2 ring-1 ring-black/10 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="grain rounded-[2rem] bg-white/92 p-6 shadow-soft2 ring-1 ring-black/10 sm:p-8">
         <div class="flex items-start justify-between gap-4">
           <div>
             <div id="modalTitle" class="text-lg font-semibold tracking-tight">Add application</div>
@@ -269,18 +421,18 @@
         <form id="form" class="mt-6 grid gap-4">
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fCompany">Company *</label>
+              <label class="text-xs font-semibold text-slate-700">Company *</label>
               <input id="fCompany" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Company" required />
             </div>
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fPosition">Position *</label>
+              <label class="text-xs font-semibold text-slate-700">Position *</label>
               <input id="fPosition" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Position" required />
             </div>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fStatus">Status *</label>
+              <label class="text-xs font-semibold text-slate-700">Status *</label>
               <select id="fStatus" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
                 <option value="applied">Applied</option>
                 <option value="screening">Screening</option>
@@ -292,29 +444,29 @@
             </div>
 
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fApplied">Applied date</label>
+              <label class="text-xs font-semibold text-slate-700">Applied date</label>
               <input id="fApplied" type="date" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" />
             </div>
 
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fNext">Next action</label>
+              <label class="text-xs font-semibold text-slate-700">Next action</label>
               <input id="fNext" type="date" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" />
             </div>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fLocation">Location</label>
+              <label class="text-xs font-semibold text-slate-700">Location</label>
               <input id="fLocation" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="Vienna / Remote / Hybrid" />
             </div>
             <div>
-              <label class="text-xs font-semibold text-slate-700" for="fUrl">Job URL</label>
+              <label class="text-xs font-semibold text-slate-700">Job URL</label>
               <input id="fUrl" type="url" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="https://…" />
             </div>
           </div>
 
           <div>
-            <label class="text-xs font-semibold text-slate-700" for="fNotes">Notes</label>
+            <label class="text-xs font-semibold text-slate-700">Notes</label>
             <textarea id="fNotes" rows="4" class="mt-2 w-full rounded-2xl bg-slate-50 px-4 py-3 text-sm ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal" placeholder="What happened? Next steps?"></textarea>
           </div>
 
@@ -326,10 +478,10 @@
                 <span>Delete</span>
               </button>
 
-              <button id="btnIcsInModal" type="button"
+              <button id="btnCalendarInModal" type="button"
                 class="hidden inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
                 <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
-                <span>.ics</span>
+                <span>Calendar</span>
               </button>
 
               <button id="btnPdfInModal" type="button"
@@ -365,6 +517,48 @@
     </div>
   </div>
 
+  <!-- Calendar Modal -->
+  <div id="calModal" class="fixed inset-0 z-[70] hidden">
+    <div id="calBackdrop" class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"></div>
+    <div class="relative mx-auto mt-20 w-[94%] max-w-md">
+      <div class="grain rounded-[2rem] bg-white/92 p-6 shadow-soft2 ring-1 ring-black/10">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-lg font-semibold tracking-tight">Add to Calendar</div>
+            <div id="calSubtitle" class="mt-1 text-xs text-slate-600">Choose a calendar provider.</div>
+          </div>
+          <button id="calClose" class="rounded-xl bg-white p-2 shadow-soft ring-1 ring-black/5 hover:bg-slate-50" aria-label="Close">
+            <i data-lucide="x" class="h-5 w-5"></i>
+          </button>
+        </div>
+
+        <div class="mt-5 grid gap-3">
+          <button id="btnCalGoogle"
+            class="inline-flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="calendar" class="h-4 w-4 text-brand-teal"></i>
+              Google Calendar
+            </span>
+            <i data-lucide="arrow-right" class="h-4 w-4 text-slate-500"></i>
+          </button>
+
+          <button id="btnCalApple"
+            class="inline-flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+            <span class="inline-flex items-center gap-2">
+              <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-gold"></i>
+              Apple Calendar (import file)
+            </span>
+            <i data-lucide="download" class="h-4 w-4 text-slate-500"></i>
+          </button>
+        </div>
+
+        <div class="mt-4 rounded-2xl bg-slate-50 p-4 text-xs text-slate-600 ring-1 ring-black/5">
+          Tip: Google also supports importing calendar files if you prefer.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Dependencies -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -384,7 +578,15 @@
 
       // Elements
       const elUserEmail = document.getElementById("userEmail");
+      const elUserEmailMobile = document.getElementById("userEmailMobile");
+      const elUserEmailMenu = document.getElementById("userEmailMenu");
+
+      const btnUserMenu = document.getElementById("btnUserMenu");
+      const userMenu = document.getElementById("userMenu");
+      const btnSignOutMobile = document.getElementById("btnSignOutMobile");
+
       const elRows = document.getElementById("rows");
+      const elCards = document.getElementById("cards");
       const elCount = document.getElementById("countPill");
       const elLoading = document.getElementById("loadingPill");
       const elEmpty = document.getElementById("emptyState");
@@ -393,6 +595,8 @@
       const elStatusFilter = document.getElementById("statusFilter");
       const elSortBy = document.getElementById("sortBy");
       const elOnlyRem = document.getElementById("onlyWithReminders");
+      const elRemWindow = document.getElementById("remWindow");
+      const elOnlyActive = document.getElementById("onlyActive");
 
       const btnAdd = document.getElementById("btnAdd");
       const btnAddEmpty = document.getElementById("btnAddEmpty");
@@ -401,11 +605,30 @@
       const btnExport = document.getElementById("btnExport");
       const exportMenu = document.getElementById("exportMenu");
       const btnExportPdfCurrent = document.getElementById("btnExportPdfCurrent");
-      const btnExportIcsAll = document.getElementById("btnExportIcsAll");
-      const btnExportIcsPanel = document.getElementById("btnExportIcsPanel");
+      const btnExportCalendarAll = document.getElementById("btnExportCalendarAll");
+
+      const btnCalendarPanel = document.getElementById("btnCalendarPanel");
 
       const elRemindersMeta = document.getElementById("remindersMeta");
       const elRemindersList = document.getElementById("remindersList");
+
+      // KPI elements
+      const kpiTotal = document.getElementById("kpiTotal");
+      const kpiActive = document.getElementById("kpiActive");
+      const kpiOverdue = document.getElementById("kpiOverdue");
+      const kpiNext7 = document.getElementById("kpiNext7");
+      const kpiInterviews = document.getElementById("kpiInterviews");
+      const kpiOffers = document.getElementById("kpiOffers");
+
+      // Utility bar
+      const btnClearFilters = document.getElementById("btnClearFilters");
+      const btnDensityComfy = document.getElementById("btnDensityComfy");
+      const btnDensityCompact = document.getElementById("btnDensityCompact");
+
+      // Reminders collapse (mobile)
+      const btnToggleReminders = document.getElementById("btnToggleReminders");
+      const remindersBody = document.getElementById("remindersBody");
+      const remChevron = document.getElementById("remChevron");
 
       // Modal
       const modal = document.getElementById("modal");
@@ -427,10 +650,18 @@
       const fNotes = document.getElementById("fNotes");
 
       const btnDeleteInModal = document.getElementById("btnDeleteInModal");
-      const btnIcsInModal = document.getElementById("btnIcsInModal");
+      const btnCalendarInModal = document.getElementById("btnCalendarInModal");
       const btnPdfInModal = document.getElementById("btnPdfInModal");
 
       const form = document.getElementById("form");
+
+      // Calendar modal
+      const calModal = document.getElementById("calModal");
+      const calBackdrop = document.getElementById("calBackdrop");
+      const calClose = document.getElementById("calClose");
+      const calSubtitle = document.getElementById("calSubtitle");
+      const btnCalGoogle = document.getElementById("btnCalGoogle");
+      const btnCalApple = document.getElementById("btnCalApple");
 
       // Toast
       const toast = document.getElementById("toast");
@@ -478,26 +709,9 @@
         return String(s || "export").replace(/[^\w\-]+/g, "_").slice(0, 80);
       }
 
-      // --- ICS helpers (better correctness + escaping) ---
-      function icsEscape(s) {
-        return String(s ?? "")
-          .replace(/\\/g, "\\\\")
-          .replace(/\n/g, "\\n")
-          .replace(/,/g, "\\,")
-          .replace(/;/g, "\\;");
-      }
       function toIcsDate(dateStr) {
         const [y, m, d] = String(dateStr).split("-");
         return `${y}${m}${d}`;
-      }
-      function toIcsDatePlus1(dateStr) {
-        const [y, m, d] = String(dateStr).split("-").map(Number);
-        const dt = new Date(y, m - 1, d);
-        dt.setDate(dt.getDate() + 1);
-        const yy = dt.getFullYear();
-        const mm = String(dt.getMonth() + 1).padStart(2, "0");
-        const dd = String(dt.getDate()).padStart(2, "0");
-        return `${yy}${mm}${dd}`;
       }
 
       function downloadBlob(filename, mime, content) {
@@ -512,35 +726,35 @@
         setTimeout(() => URL.revokeObjectURL(url), 1200);
       }
 
-      // Debounce (smoother search)
-      function debounce(fn, ms = 150) {
-        let t = null;
-        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-      }
-
       // State
       let session = null;
       let apps = [];
       let editingId = null;
 
-      // Realtime
-      let rt = null;
-      function startRealtime() {
+      // Local preferences
+      const LS_PINNED = "applytrack_pinned_ids";
+      const LS_DENSITY = "applytrack_density";
+      const LS_REM_OPEN = "applytrack_reminders_open";
+
+      function getPinnedSet() {
         try {
-          if (rt) sb.removeChannel(rt);
-        } catch (_) {}
+          const raw = localStorage.getItem(LS_PINNED);
+          const arr = raw ? JSON.parse(raw) : [];
+          return new Set(Array.isArray(arr) ? arr : []);
+        } catch { return new Set(); }
+      }
+      function savePinnedSet(set) {
+        localStorage.setItem(LS_PINNED, JSON.stringify(Array.from(set)));
+      }
+      let pinned = getPinnedSet();
 
-        if (!session?.user?.id) return;
-
-        rt = sb
-          .channel("applications-rt")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "applications",
-            filter: `user_id=eq.${session.user.id}`,
-          }, () => fetchApps())
-          .subscribe();
+      let density = (localStorage.getItem(LS_DENSITY) || "comfy");
+      function setDensity(v) {
+        density = v;
+        localStorage.setItem(LS_DENSITY, v);
+        btnDensityComfy.classList.toggle("bg-slate-50", v === "comfy");
+        btnDensityCompact.classList.toggle("bg-slate-50", v === "compact");
+        render();
       }
 
       // Auth: handle PKCE `code` param and remove it from URL
@@ -565,8 +779,10 @@
           return null;
         }
         session = data.session;
-        elUserEmail.textContent = session.user.email || session.user.user_metadata?.email || "Unknown";
-        startRealtime();
+        const email = session.user.email || session.user.user_metadata?.email || "Unknown";
+        elUserEmail.textContent = email;
+        elUserEmailMobile.textContent = email;
+        elUserEmailMenu.textContent = email;
         return session;
       }
 
@@ -576,19 +792,18 @@
           return;
         }
         session = s;
-        elUserEmail.textContent = session.user.email || session.user.user_metadata?.email || "Unknown";
-        startRealtime();
+        const email = session.user.email || session.user.user_metadata?.email || "Unknown";
+        elUserEmail.textContent = email;
+        elUserEmailMobile.textContent = email;
+        elUserEmailMenu.textContent = email;
       });
 
-      // Data fetch (IMPORTANT: per-user filter)
+      // Data fetch
       async function fetchApps() {
-        if (!session?.user?.id) return;
-
         setLoading(true);
         const { data, error } = await sb
           .from("applications")
           .select("*")
-          .eq("user_id", session.user.id)
           .order("created_at", { ascending: false });
         setLoading(false);
 
@@ -602,11 +817,17 @@
         render();
       }
 
+      function isActiveStatus(status) {
+        return ["applied", "screening", "interview", "offer"].includes(String(status || ""));
+      }
+
       function getFilteredApps() {
         const q = (elQ.value || "").trim().toLowerCase();
         const status = elStatusFilter.value;
         const onlyRem = elOnlyRem.checked;
         const sortBy = elSortBy.value;
+        const remWindow = elRemWindow.value;
+        const onlyActive = elOnlyActive.checked;
 
         let list = apps.slice();
 
@@ -621,6 +842,19 @@
 
         if (status !== "all") list = list.filter(a => a.status === status);
         if (onlyRem) list = list.filter(a => !!a.next_action_at);
+        if (onlyActive) list = list.filter(a => isActiveStatus(a.status));
+
+        const today = new Date(); today.setHours(0,0,0,0);
+        const inDays = (d) => {
+          const dt = new Date(d + "T00:00:00");
+          return Math.round((dt - today) / 86400000);
+        };
+
+        if (remWindow !== "all") {
+          if (remWindow === "overdue") list = list.filter(a => a.next_action_at && new Date(a.next_action_at + "T00:00:00") < today);
+          if (remWindow === "next7") list = list.filter(a => a.next_action_at && inDays(a.next_action_at) >= 0 && inDays(a.next_action_at) <= 7);
+          if (remWindow === "next30") list = list.filter(a => a.next_action_at && inDays(a.next_action_at) >= 0 && inDays(a.next_action_at) <= 30);
+        }
 
         const getDate = (v) => v ? new Date(v + "T00:00:00") : null;
 
@@ -636,6 +870,9 @@
 
           return 0;
         });
+
+        // pinned on top (stable)
+        list.sort((A, B) => (pinned.has(B.id) ? 1 : 0) - (pinned.has(A.id) ? 1 : 0));
 
         return list;
       }
@@ -684,6 +921,9 @@
         }
 
         apps = apps.filter(x => x.id !== id);
+        pinned.delete(id);
+        savePinnedSet(pinned);
+
         showToast("Deleted");
         render();
       }
@@ -692,34 +932,23 @@
       function showModalError(msg) {
         modalErrorText.textContent = msg;
         modalError.classList.remove("hidden");
+        lucide.createIcons();
       }
       function clearModalError() {
         modalError.classList.add("hidden");
         modalErrorText.textContent = "";
       }
 
-      let lastFocusEl = null;
-
       function openModal() {
         clearModalError();
-        lastFocusEl = document.activeElement;
-
         modal.classList.remove("hidden");
         document.body.classList.add("modal-open");
-
-        // focus first input
-        setTimeout(() => fCompany.focus(), 0);
-
         lucide.createIcons();
       }
       function closeModal() {
         modal.classList.add("hidden");
         document.body.classList.remove("modal-open");
         editingId = null;
-
-        if (lastFocusEl && typeof lastFocusEl.focus === "function") {
-          setTimeout(() => lastFocusEl.focus(), 0);
-        }
       }
 
       function resetForm() {
@@ -739,10 +968,11 @@
         resetForm();
 
         btnDeleteInModal.classList.add("hidden");
-        btnIcsInModal.classList.add("hidden");
+        btnCalendarInModal.classList.add("hidden");
         btnPdfInModal.classList.add("hidden");
 
         openModal();
+        fCompany.focus();
       }
 
       function openModalForEdit(a) {
@@ -760,10 +990,10 @@
 
         btnDeleteInModal.classList.remove("hidden");
         btnPdfInModal.classList.remove("hidden");
-        if (a.next_action_at) btnIcsInModal.classList.remove("hidden");
-        else btnIcsInModal.classList.add("hidden");
+        btnCalendarInModal.classList.remove("hidden");
 
         openModal();
+        fCompany.focus();
       }
 
       modalBackdrop.addEventListener("click", closeModal);
@@ -785,10 +1015,10 @@
         if (a) exportPdfSingle(a);
       });
 
-      btnIcsInModal.addEventListener("click", () => {
+      btnCalendarInModal.addEventListener("click", () => {
         if (!editingId) return;
         const a = apps.find(x => x.id === editingId);
-        if (a) exportIcsSingle(a);
+        if (a) openCalendarModal({ mode: "single", app: a });
       });
 
       form.addEventListener("submit", async (e) => {
@@ -804,30 +1034,14 @@
           return;
         }
 
-        // Basic date sanity
-        const appliedVal = fApplied.value || null;
-        const nextVal = fNext.value || null;
-        if (appliedVal && nextVal) {
-          const aD = new Date(appliedVal + "T00:00:00");
-          const nD = new Date(nextVal + "T00:00:00");
-          if (nD < aD) {
-            showModalError("Next action can’t be before applied date.");
-            return;
-          }
-        }
-
-        // URL normalize
-        let jobUrl = (fUrl.value || "").trim();
-        if (jobUrl && !/^https?:\/\//i.test(jobUrl)) jobUrl = "https://" + jobUrl;
-
         const payload = {
           company,
           position,
           status,
-          applied_at: appliedVal,
-          next_action_at: nextVal,
+          applied_at: fApplied.value || null,
+          next_action_at: fNext.value || null,
           location: fLocation.value.trim() || null,
-          job_url: jobUrl || null,
+          job_url: fUrl.value.trim() || null,
           notes: fNotes.value.trim() || null,
         };
 
@@ -849,7 +1063,7 @@
         render();
       });
 
-      // Reminders + exports
+      // PDF exports
       function exportPdfSingle(a) {
         const { jsPDF } = window.jspdf || {};
         if (!jsPDF) return showToast("PDF library not loaded.");
@@ -928,11 +1142,37 @@
         showToast("PDF downloaded");
       }
 
-      function exportIcsSingle(a) {
-        if (!a.next_action_at) return showToast("No next action date set.");
+      // Calendar helpers (Google link + Apple import file)
+      function makeGoogleCalendarUrl(a) {
+        if (!a.next_action_at) return null;
 
-        const dtStart = toIcsDate(a.next_action_at);
-        const dtEnd = toIcsDatePlus1(a.next_action_at); // exclusive end (correct all-day)
+        const dt = toIcsDate(a.next_action_at);
+        const summary = `ApplyTrack: Follow up — ${a.company} (${a.position})`;
+        const details = [
+          `Company: ${a.company || ""}`,
+          `Position: ${a.position || ""}`,
+          `Status: ${a.status || ""}`,
+          a.job_url ? `Job URL: ${a.job_url}` : "",
+          a.notes ? `Notes: ${a.notes}` : ""
+        ].filter(Boolean).join("\n");
+
+        const location = a.location || "";
+
+        const params = new URLSearchParams({
+          action: "TEMPLATE",
+          text: summary,
+          dates: `${dt}/${dt}`,
+          details,
+          location
+        });
+
+        return `https://calendar.google.com/calendar/render?${params.toString()}`;
+      }
+
+      function makeIcsForSingle(a) {
+        if (!a.next_action_at) return null;
+
+        const dt = toIcsDate(a.next_action_at);
         const uid = `${a.id}@applytrack`;
         const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
 
@@ -943,46 +1183,30 @@
           `Status: ${a.status || ""}`,
           a.job_url ? `Job URL: ${a.job_url}` : "",
           a.notes ? `Notes: ${a.notes}` : ""
-        ].filter(Boolean).join("\n");
+        ].filter(Boolean).join("\\n");
 
-        const ics =
-`BEGIN:VCALENDAR
+        return `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ApplyTrack//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:${icsEscape(uid)}
-DTSTAMP:${icsEscape(stamp)}
-DTSTART;VALUE=DATE:${icsEscape(dtStart)}
-DTEND;VALUE=DATE:${icsEscape(dtEnd)}
-SUMMARY:${icsEscape(summary)}
-DESCRIPTION:${icsEscape(desc)}
+UID:${uid}
+DTSTAMP:${stamp}
+DTSTART;VALUE=DATE:${dt}
+DTEND;VALUE=DATE:${dt}
+SUMMARY:${summary.replace(/\n/g," ")}
+DESCRIPTION:${desc.replace(/\n/g,"\\n")}
 END:VEVENT
 END:VCALENDAR
 `;
-
-        downloadBlob(
-          `ApplyTrack_${cleanFileName(a.company)}_${cleanFileName(a.position)}.ics`,
-          "text/calendar;charset=utf-8",
-          ics
-        );
-        showToast(".ics downloaded");
       }
 
-      function exportIcsAllUpcoming() {
-        const list = apps
-          .filter(a => !!a.next_action_at)
-          .slice()
-          .sort((A, B) => new Date(A.next_action_at + "T00:00:00") - new Date(B.next_action_at + "T00:00:00"));
-
-        if (!list.length) return showToast("No reminders to export.");
-
+      function makeIcsForAllUpcoming(list) {
         const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
 
         const events = list.map(a => {
-          const dtStart = toIcsDate(a.next_action_at);
-          const dtEnd = toIcsDatePlus1(a.next_action_at);
+          const dt = toIcsDate(a.next_action_at);
           const uid = `${a.id}@applytrack`;
           const summary = `ApplyTrack: Follow up — ${a.company} (${a.position})`;
           const desc = [
@@ -991,20 +1215,19 @@ END:VCALENDAR
             `Status: ${a.status || ""}`,
             a.job_url ? `Job URL: ${a.job_url}` : "",
             a.notes ? `Notes: ${a.notes}` : ""
-          ].filter(Boolean).join("\n");
+          ].filter(Boolean).join("\\n");
 
           return `BEGIN:VEVENT
-UID:${icsEscape(uid)}
-DTSTAMP:${icsEscape(stamp)}
-DTSTART;VALUE=DATE:${icsEscape(dtStart)}
-DTEND;VALUE=DATE:${icsEscape(dtEnd)}
-SUMMARY:${icsEscape(summary)}
-DESCRIPTION:${icsEscape(desc)}
+UID:${uid}
+DTSTAMP:${stamp}
+DTSTART;VALUE=DATE:${dt}
+DTEND;VALUE=DATE:${dt}
+SUMMARY:${summary.replace(/\n/g," ")}
+DESCRIPTION:${desc.replace(/\n/g,"\\n")}
 END:VEVENT`;
         }).join("\n");
 
-        const ics =
-`BEGIN:VCALENDAR
+        return `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ApplyTrack//EN
 CALSCALE:GREGORIAN
@@ -1012,11 +1235,89 @@ METHOD:PUBLISH
 ${events}
 END:VCALENDAR
 `;
-
-        downloadBlob(`ApplyTrack_reminders_${new Date().toISOString().slice(0,10)}.ics`, "text/calendar;charset=utf-8", ics);
-        showToast(".ics downloaded");
       }
 
+      let calContext = { mode: "single", app: null, list: null };
+
+      function openCalendarModal(ctx) {
+        calContext = ctx;
+
+        if (ctx.mode === "single") {
+          const a = ctx.app;
+          calSubtitle.textContent = a?.next_action_at
+            ? `${a.company} — ${a.position} · ${a.next_action_at}`
+            : `${a.company} — ${a.position}`;
+        } else {
+          calSubtitle.textContent = "Upcoming reminders";
+        }
+
+        calModal.classList.remove("hidden");
+        document.body.classList.add("modal-open");
+        lucide.createIcons();
+      }
+
+      function closeCalendarModal() {
+        calModal.classList.add("hidden");
+        document.body.classList.remove("modal-open");
+      }
+
+      calBackdrop.addEventListener("click", closeCalendarModal);
+      calClose.addEventListener("click", closeCalendarModal);
+
+      btnCalGoogle.addEventListener("click", () => {
+        if (calContext.mode === "single") {
+          const a = calContext.app;
+          if (!a?.next_action_at) return showToast("No next action date set.");
+          const url = makeGoogleCalendarUrl(a);
+          if (!url) return showToast("Could not create calendar link.");
+          window.open(url, "_blank", "noopener,noreferrer");
+          showToast("Opened Google Calendar");
+          closeCalendarModal();
+          return;
+        }
+
+        // bulk: open first few as links (avoid spam)
+        const list = (calContext.list || []).filter(x => x.next_action_at);
+        if (!list.length) return showToast("No reminders to add.");
+
+        const max = Math.min(5, list.length);
+        for (let i = 0; i < max; i++) {
+          const url = makeGoogleCalendarUrl(list[i]);
+          if (url) window.open(url, "_blank", "noopener,noreferrer");
+        }
+        showToast(max < list.length ? `Opened ${max} events (limit).` : "Opened events.");
+        closeCalendarModal();
+      });
+
+      btnCalApple.addEventListener("click", () => {
+        if (calContext.mode === "single") {
+          const a = calContext.app;
+          if (!a?.next_action_at) return showToast("No next action date set.");
+          const ics = makeIcsForSingle(a);
+          if (!ics) return showToast("Could not create calendar file.");
+          downloadBlob(
+            `ApplyTrack_${cleanFileName(a.company)}_${cleanFileName(a.position)}.ics`,
+            "text/calendar;charset=utf-8",
+            ics
+          );
+          showToast("Calendar file downloaded");
+          closeCalendarModal();
+          return;
+        }
+
+        const list = (calContext.list || []).filter(a => !!a.next_action_at)
+          .slice()
+          .sort((A, B) => new Date(A.next_action_at + "T00:00:00") - new Date(B.next_action_at + "T00:00:00"));
+
+        if (!list.length) return showToast("No reminders to export.");
+
+        const ics = makeIcsForAllUpcoming(list);
+        downloadBlob(`ApplyTrack_reminders_${new Date().toISOString().slice(0,10)}.ics`, "text/calendar;charset=utf-8", ics);
+        showToast("Calendar file downloaded");
+        closeCalendarModal();
+      });
+
+      // Reminders panel
       function renderReminders() {
         const list = apps
           .filter(a => !!a.next_action_at)
@@ -1069,10 +1370,10 @@ END:VCALENDAR
               </div>
 
               <div class="mt-3 flex items-center gap-2">
-                <button data-remics="${escapeHtml(a.id)}"
+                <button data-remcal="${escapeHtml(a.id)}"
                   class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
                   <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
-                  <span>.ics</span>
+                  <span>Calendar</span>
                 </button>
                 <button data-rempdf="${escapeHtml(a.id)}"
                   class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
@@ -1091,11 +1392,11 @@ END:VCALENDAR
             if (a) openModalForEdit(a);
           });
         });
-        elRemindersList.querySelectorAll("[data-remics]").forEach(b => {
+        elRemindersList.querySelectorAll("[data-remcal]").forEach(b => {
           b.addEventListener("click", () => {
-            const id = b.getAttribute("data-remics");
+            const id = b.getAttribute("data-remcal");
             const a = apps.find(x => x.id === id);
-            if (a) exportIcsSingle(a);
+            if (a) openCalendarModal({ mode: "single", app: a });
           });
         });
         elRemindersList.querySelectorAll("[data-rempdf]").forEach(b => {
@@ -1109,15 +1410,50 @@ END:VCALENDAR
         lucide.createIcons();
       }
 
-      // Render table
+      // KPI render
+      function renderKpis() {
+        const total = apps.length;
+
+        const today = new Date(); today.setHours(0,0,0,0);
+        const inDays = (d) => {
+          const dt = new Date(d + "T00:00:00");
+          return Math.round((dt - today) / 86400000);
+        };
+
+        const active = apps.filter(a => isActiveStatus(a.status)).length;
+        const overdue = apps.filter(a => a.next_action_at && new Date(a.next_action_at + "T00:00:00") < today && isActiveStatus(a.status)).length;
+        const next7 = apps.filter(a => a.next_action_at && inDays(a.next_action_at) >= 0 && inDays(a.next_action_at) <= 7 && isActiveStatus(a.status)).length;
+        const interviews = apps.filter(a => String(a.status) === "interview").length;
+        const offers = apps.filter(a => String(a.status) === "offer").length;
+
+        kpiTotal.textContent = String(total);
+        kpiActive.textContent = String(active);
+        kpiOverdue.textContent = String(overdue);
+        kpiNext7.textContent = String(next7);
+        kpiInterviews.textContent = String(interviews);
+        kpiOffers.textContent = String(offers);
+      }
+
+      // Render (desktop table + mobile cards)
       function render() {
+        lucide.createIcons();
+
+        renderKpis();
+
         const list = getFilteredApps();
         elCount.textContent = String(list.length);
 
-        elRows.innerHTML = "";
-
+        // empty state
         if (!apps.length) elEmpty.classList.remove("hidden");
         else elEmpty.classList.add("hidden");
+
+        // desktop table rows
+        if (elRows) elRows.innerHTML = "";
+        // mobile cards
+        if (elCards) elCards.innerHTML = "";
+
+        const padRow = density === "compact" ? "py-3" : "py-4";
+        const padCard = density === "compact" ? "p-3" : "p-4";
 
         for (const a of list) {
           const jobUrl = a.job_url ? String(a.job_url) : "";
@@ -1126,86 +1462,168 @@ END:VCALENDAR
           const applied = fmtDate(a.applied_at);
           const next = fmtDate(a.next_action_at);
 
-          elRows.insertAdjacentHTML("beforeend", `
-            <tr class="hover:bg-slate-50/70">
-              <td class="px-5 py-4">
-                <div class="font-semibold text-slate-900">${escapeHtml(a.company)}</div>
+          const isPinned = pinned.has(a.id);
 
-                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+          // desktop table (lg+)
+          if (elRows) {
+            elRows.insertAdjacentHTML("beforeend", `
+              <tr class="hover:bg-slate-50/70">
+                <td class="px-5 ${padRow}">
+                  <div class="flex items-center gap-2">
+                    <div class="font-semibold text-slate-900">${escapeHtml(a.company)}</div>
+                    ${isPinned ? `<span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-black/5"><i data-lucide="pin" class="h-3.5 w-3.5"></i>Pinned</span>` : ``}
+                  </div>
                   ${safeUrl
-                    ? `<a class="inline-flex items-center gap-1 text-xs font-semibold text-brand-teal hover:underline" href="${escapeHtml(safeUrl)}" target="_blank" rel="noreferrer">
+                    ? `<a class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand-teal hover:underline" href="${escapeHtml(safeUrl)}" target="_blank" rel="noreferrer">
                          <span>Job link</span><span aria-hidden="true">↗</span>
                        </a>`
-                    : ``
+                    : `<div class="mt-1 text-xs text-slate-500">${escapeHtml(a.location || "")}</div>`
                   }
-                  ${a.location
-                    ? `<div class="text-xs text-slate-500">${escapeHtml(a.location)}</div>`
-                    : ``
+                </td>
+
+                <td class="px-5 ${padRow} text-slate-700">${escapeHtml(a.position)}</td>
+
+                <td class="px-5 ${padRow}">
+                  <div class="flex items-center gap-2">
+                    ${statusPill(a.status)}
+                    <select data-action="status" data-id="${escapeHtml(a.id)}"
+                      class="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+                      <option value="applied" ${a.status==="applied"?"selected":""}>Applied</option>
+                      <option value="screening" ${a.status==="screening"?"selected":""}>Screening</option>
+                      <option value="interview" ${a.status==="interview"?"selected":""}>Interview</option>
+                      <option value="offer" ${a.status==="offer"?"selected":""}>Offer</option>
+                      <option value="rejected" ${a.status==="rejected"?"selected":""}>Rejected</option>
+                      <option value="withdrawn" ${a.status==="withdrawn"?"selected":""}>Withdrawn</option>
+                    </select>
+                  </div>
+                </td>
+
+                <td class="px-5 ${padRow} text-slate-700">${escapeHtml(applied) || "—"}</td>
+
+                <td class="px-5 ${padRow}">
+                  ${next
+                    ? `<div class="inline-flex items-center gap-2 rounded-full bg-brand-gold/18 px-2.5 py-1 text-xs font-semibold text-slate-900 ring-1 ring-brand-gold/30">
+                         <span>${escapeHtml(next)}</span>
+                       </div>`
+                    : `<span class="text-xs text-slate-500">—</span>`
                   }
+                </td>
+
+                <td class="px-5 ${padRow}">
+                  <div class="flex items-center justify-end gap-2">
+                    <button data-action="pin" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="${isPinned ? "Unpin" : "Pin"}">
+                      <i data-lucide="pin" class="h-4 w-4 ${isPinned ? "text-brand-teal" : "text-slate-600"}"></i>
+                    </button>
+
+                    <button data-action="edit" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="Edit">
+                      <i data-lucide="pencil" class="h-4 w-4 text-slate-600"></i>
+                    </button>
+
+                    <button data-action="calendar" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="Calendar">
+                      <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
+                    </button>
+
+                    <button data-action="pdf" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="PDF">
+                      <i data-lucide="file-text" class="h-4 w-4 text-brand-gold"></i>
+                    </button>
+
+                    <button data-action="delete" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="Delete">
+                      <i data-lucide="trash-2" class="h-4 w-4 text-brand-coral"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `);
+          }
+
+          // mobile card (smaller, no horizontal scroll)
+          if (elCards) {
+            elCards.insertAdjacentHTML("beforeend", `
+              <div class="rounded-3xl bg-white ${padCard} shadow-soft ring-1 ring-black/5">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <div class="truncate text-sm font-semibold text-slate-900">${escapeHtml(a.company)}</div>
+                      ${isPinned ? `<span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 ring-1 ring-black/5"><i data-lucide="pin" class="h-3 w-3"></i>Pinned</span>` : ``}
+                    </div>
+
+                    <div class="mt-1 truncate text-sm text-slate-700">${escapeHtml(a.position)}</div>
+
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                      ${statusPill(a.status)}
+                      <select data-action="status" data-id="${escapeHtml(a.id)}"
+                        class="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
+                        <option value="applied" ${a.status==="applied"?"selected":""}>Applied</option>
+                        <option value="screening" ${a.status==="screening"?"selected":""}>Screening</option>
+                        <option value="interview" ${a.status==="interview"?"selected":""}>Interview</option>
+                        <option value="offer" ${a.status==="offer"?"selected":""}>Offer</option>
+                        <option value="rejected" ${a.status==="rejected"?"selected":""}>Rejected</option>
+                        <option value="withdrawn" ${a.status==="withdrawn"?"selected":""}>Withdrawn</option>
+                      </select>
+                    </div>
+
+                    <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+                      <div class="rounded-2xl bg-slate-50 p-3 ring-1 ring-black/5">
+                        <div class="text-[11px] font-semibold text-slate-600">Applied</div>
+                        <div class="mt-1 font-semibold text-slate-900">${escapeHtml(applied) || "—"}</div>
+                      </div>
+                      <div class="rounded-2xl bg-slate-50 p-3 ring-1 ring-black/5">
+                        <div class="text-[11px] font-semibold text-slate-600">Next action</div>
+                        <div class="mt-1 font-semibold text-slate-900">${escapeHtml(next) || "—"}</div>
+                      </div>
+                    </div>
+
+                    <div class="mt-3">
+                      ${safeUrl
+                        ? `<a class="inline-flex items-center gap-1 text-xs font-semibold text-brand-teal hover:underline" href="${escapeHtml(safeUrl)}" target="_blank" rel="noreferrer">
+                             <span>Job link</span><span aria-hidden="true">↗</span>
+                           </a>`
+                        : `<div class="text-xs text-slate-500">${escapeHtml(a.location || "")}</div>`
+                      }
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-center gap-2">
+                    <button data-action="pin" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="${isPinned ? "Unpin" : "Pin"}">
+                      <i data-lucide="pin" class="h-4 w-4 ${isPinned ? "text-brand-teal" : "text-slate-600"}"></i>
+                    </button>
+                    <button data-action="edit" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="Edit">
+                      <i data-lucide="pencil" class="h-4 w-4 text-slate-600"></i>
+                    </button>
+                    <button data-action="delete" data-id="${escapeHtml(a.id)}"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-soft ring-1 ring-black/5 hover:bg-slate-50" title="Delete">
+                      <i data-lucide="trash-2" class="h-4 w-4 text-brand-coral"></i>
+                    </button>
+                  </div>
                 </div>
-              </td>
 
-              <td class="px-5 py-4 text-slate-700">${escapeHtml(a.position)}</td>
-
-              <td class="px-5 py-4">
-                <div class="flex items-center gap-2">
-                  ${statusPill(a.status)}
-                  <select data-action="status" data-id="${escapeHtml(a.id)}"
-                    class="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-black/10 outline-none focus:ring-2 focus:ring-brand-teal">
-                    <option value="applied" ${a.status==="applied"?"selected":""}>Applied</option>
-                    <option value="screening" ${a.status==="screening"?"selected":""}>Screening</option>
-                    <option value="interview" ${a.status==="interview"?"selected":""}>Interview</option>
-                    <option value="offer" ${a.status==="offer"?"selected":""}>Offer</option>
-                    <option value="rejected" ${a.status==="rejected"?"selected":""}>Rejected</option>
-                    <option value="withdrawn" ${a.status==="withdrawn"?"selected":""}>Withdrawn</option>
-                  </select>
-                </div>
-              </td>
-
-              <td class="px-5 py-4 text-slate-700">${escapeHtml(applied) || "—"}</td>
-
-              <td class="px-5 py-4">
-                ${next
-                  ? `<div class="inline-flex items-center gap-2 rounded-full bg-brand-gold/18 px-2.5 py-1 text-xs font-semibold text-slate-900 ring-1 ring-brand-gold/30">
-                       <span>${escapeHtml(next)}</span>
-                     </div>`
-                  : `<span class="text-xs text-slate-500">—</span>`
-                }
-              </td>
-
-              <td class="px-5 py-4">
-                <div class="flex items-center justify-end gap-2">
-                  <button data-action="edit" data-id="${escapeHtml(a.id)}"
-                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
-                    <i data-lucide="pencil" class="h-4 w-4 text-slate-600"></i>
-                    <span>Edit</span>
+                <div class="mt-3 flex items-center gap-2">
+                  <button data-action="calendar" data-id="${escapeHtml(a.id)}"
+                    class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
+                    <span>Calendar</span>
                   </button>
 
                   <button data-action="pdf" data-id="${escapeHtml(a.id)}"
-                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
+                    class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
                     <i data-lucide="file-text" class="h-4 w-4 text-brand-gold"></i>
                     <span>PDF</span>
                   </button>
-
-                  <button data-action="ics" data-id="${escapeHtml(a.id)}"
-                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
-                    <i data-lucide="calendar-plus" class="h-4 w-4 text-brand-teal"></i>
-                    <span>.ics</span>
-                  </button>
-
-                  <button data-action="delete" data-id="${escapeHtml(a.id)}"
-                    class="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-900 shadow-soft ring-1 ring-black/5 hover:bg-slate-50">
-                    <i data-lucide="trash-2" class="h-4 w-4 text-brand-coral"></i>
-                    <span>Delete</span>
-                  </button>
                 </div>
-              </td>
-            </tr>
-          `);
+              </div>
+            `);
+          }
         }
 
-        // Wire actions
-        elRows.querySelectorAll('select[data-action="status"]').forEach(sel => {
+        // Wire actions (shared for table + cards)
+        document.querySelectorAll('select[data-action="status"]').forEach(sel => {
           sel.addEventListener("change", async () => {
             const id = sel.getAttribute("data-id");
             const value = sel.value;
@@ -1214,7 +1632,7 @@ END:VCALENDAR
           });
         });
 
-        elRows.querySelectorAll("button[data-action]").forEach(btn => {
+        document.querySelectorAll("button[data-action]").forEach(btn => {
           btn.addEventListener("click", async () => {
             const id = btn.getAttribute("data-id");
             const action = btn.getAttribute("data-action");
@@ -1224,7 +1642,13 @@ END:VCALENDAR
             if (action === "edit") openModalForEdit(a);
             if (action === "delete") await deleteApp(id);
             if (action === "pdf") exportPdfSingle(a);
-            if (action === "ics") exportIcsSingle(a);
+            if (action === "calendar") openCalendarModal({ mode: "single", app: a });
+            if (action === "pin") {
+              if (pinned.has(id)) pinned.delete(id);
+              else pinned.add(id);
+              savePinnedSet(pinned);
+              render();
+            }
           });
         });
 
@@ -1246,26 +1670,128 @@ END:VCALENDAR
         exportMenu.classList.add("hidden");
         exportPdfCurrentView();
       });
-      btnExportIcsAll.addEventListener("click", () => {
+
+      btnExportCalendarAll.addEventListener("click", () => {
         exportMenu.classList.add("hidden");
-        exportIcsAllUpcoming();
+        const list = apps
+          .filter(a => !!a.next_action_at)
+          .slice()
+          .sort((A, B) => new Date(A.next_action_at + "T00:00:00") - new Date(B.next_action_at + "T00:00:00"));
+        openCalendarModal({ mode: "bulk", list });
       });
-      btnExportIcsPanel.addEventListener("click", exportIcsAllUpcoming);
+
+      btnCalendarPanel.addEventListener("click", () => {
+        const list = apps
+          .filter(a => !!a.next_action_at)
+          .slice()
+          .sort((A, B) => new Date(A.next_action_at + "T00:00:00") - new Date(B.next_action_at + "T00:00:00"));
+        openCalendarModal({ mode: "bulk", list });
+      });
 
       // Filters
-      const onFilterChange = () => render();
-      elQ.addEventListener("input", debounce(onFilterChange, 150));
+      function onFilterChange() { render(); }
+      elQ.addEventListener("input", onFilterChange);
       elStatusFilter.addEventListener("change", onFilterChange);
       elSortBy.addEventListener("change", onFilterChange);
       elOnlyRem.addEventListener("change", onFilterChange);
+      elRemWindow.addEventListener("change", onFilterChange);
+      elOnlyActive.addEventListener("change", onFilterChange);
+
+      // Clear filters
+      btnClearFilters.addEventListener("click", () => {
+        elQ.value = "";
+        elStatusFilter.value = "all";
+        elSortBy.value = "created_desc";
+        elOnlyRem.checked = false;
+        elRemWindow.value = "all";
+        elOnlyActive.checked = false;
+        render();
+        showToast("Filters cleared");
+      });
+
+      // Density
+      btnDensityComfy.addEventListener("click", () => setDensity("comfy"));
+      btnDensityCompact.addEventListener("click", () => setDensity("compact"));
+      setDensity(density);
 
       // Buttons
       btnAdd.addEventListener("click", openModalForAdd);
       if (btnAddEmpty) btnAddEmpty.addEventListener("click", openModalForAdd);
 
-      btnSignOut.addEventListener("click", async () => {
+      btnSignOut?.addEventListener("click", async () => {
         await sb.auth.signOut();
         location.href = "./login.html";
+      });
+
+      // Mobile user menu
+      if (btnUserMenu && userMenu) {
+        btnUserMenu.addEventListener("click", (e) => {
+          e.stopPropagation();
+          userMenu.classList.toggle("hidden");
+        });
+        document.addEventListener("click", () => userMenu.classList.add("hidden"));
+      }
+      btnSignOutMobile?.addEventListener("click", async () => {
+        await sb.auth.signOut();
+        location.href = "./login.html";
+      });
+
+      // KPI click shortcuts (sets filters)
+      document.querySelectorAll("[data-kpi]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const k = btn.getAttribute("data-kpi");
+          // reset base filters
+          elStatusFilter.value = "all";
+          elRemWindow.value = "all";
+          elOnlyRem.checked = false;
+          elOnlyActive.checked = false;
+
+          if (k === "active") elOnlyActive.checked = true;
+          if (k === "overdue") { elOnlyRem.checked = true; elRemWindow.value = "overdue"; }
+          if (k === "next7") { elOnlyRem.checked = true; elRemWindow.value = "next7"; }
+          if (k === "interviews") elStatusFilter.value = "interview";
+          if (k === "offers") elStatusFilter.value = "offer";
+
+          render();
+        });
+      });
+
+      // Reminders collapse on mobile
+      function setRemindersOpen(open) {
+        const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+        if (!isMobile) {
+          remindersBody.classList.remove("hidden");
+          remChevron?.classList.add("hidden");
+          return;
+        }
+        remChevron?.classList.remove("hidden");
+        remindersBody.classList.toggle("hidden", !open);
+        if (remChevron) remChevron.style.transform = open ? "rotate(180deg)" : "rotate(0deg)";
+        localStorage.setItem(LS_REM_OPEN, open ? "1" : "0");
+      }
+
+      const initialRemOpen = (localStorage.getItem(LS_REM_OPEN) ?? "1") === "1";
+      setRemindersOpen(initialRemOpen);
+      window.addEventListener("resize", () => setRemindersOpen((localStorage.getItem(LS_REM_OPEN) ?? "1") === "1"));
+
+      btnToggleReminders.addEventListener("click", () => {
+        const currentlyHidden = remindersBody.classList.contains("hidden");
+        setRemindersOpen(currentlyHidden);
+      });
+
+      // Keyboard shortcuts
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          elQ.focus();
+        }
+        if ((e.key === "n" || e.key === "N") && !modal.classList.contains("hidden")) return;
+        if (e.key === "n" || e.key === "N") {
+          // don't steal when typing
+          const t = (document.activeElement?.tagName || "").toLowerCase();
+          if (t === "input" || t === "textarea" || t === "select") return;
+          openModalForAdd();
+        }
       });
 
       // Init
